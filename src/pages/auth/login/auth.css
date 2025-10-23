@@ -99,3 +99,15 @@ input:focus {
   margin-top: 10px;
   font-size: 13px;
 }
+
+select {
+  padding: 0.6rem;
+  border: 1px solid var(--gray);
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  background: white;
+}
+select:focus {
+  border-color: var(--primary);
+}
