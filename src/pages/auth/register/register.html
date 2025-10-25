@@ -18,11 +18,20 @@
         <label>Nombre</label>
         <input type="text" id="name" placeholder="Ingresa tu nombre completo" required />
 
+        <label>Apellido</label>
+        <input type="text" id="lastName" placeholder="Ingresa tu apellido completo" required />
+
         <label>Email</label>
         <input type="email" id="email" placeholder="ejemplo@correo.com" required />
 
         <label>Contraseña</label>
         <input type="password" id="password" placeholder="Mínimo 6 caracteres" minlength="6" required />
+
+        <label>Rol</label>
+        <select id="role" required>
+          <option value="USUARIO">Usuario</option>
+          <option value="ADMIN">Administrador</option>
+        </select>
 
         <!-- Botón de registro -->
         <button type="submit" class="btn-primary">Registrarse</button>
@@ -37,6 +46,6 @@
   </div>
 
   <!-- Archivo JS para manejar el registro -->
-  <script type="module" src="register.js"></script>
+  <script type="module" src="./register.js"></script>
 </body>
 </html>

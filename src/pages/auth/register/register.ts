@@ -10,8 +10,10 @@ form.addEventListener("submit", async (e) => {
 
     const userData = {
         nombre: (document.getElementById("name") as HTMLInputElement).value,
+        apellido: (document.getElementById("lastName") as HTMLInputElement).value,
         email: (document.getElementById("email") as HTMLInputElement).value,
         contrasena: (document.getElementById("password") as HTMLInputElement).value,
+        rol: (document.getElementById("role") as HTMLSelectElement).value.toUpperCase()
     };
 
     if (userData.contrasena.length < 6) {
