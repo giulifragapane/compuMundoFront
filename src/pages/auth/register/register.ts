@@ -1,44 +1,29 @@
-// Obtenemos el formulario y el elemento de error
-const form = document.getElementById("registerForm");
-const errorMsg = document.getElementById("error");
+import { postData } from "../../../utils/api";
+import { saveAuthData } from "../../../utils/auth";
 
-// Evento al enviar el formulario
+const form = document.getElementById("registerForm") as HTMLFormElement;
+const errorMsg = document.getElementById("error") as HTMLParagraphElement;
+
 form.addEventListener("submit", async (e) => {
-  e.preventDefault(); // Evita recargar la página
+    e.preventDefault();
+    errorMsg.textContent = "";
 
-  // Tomamos los valores de los campos
-  const name = document.getElementById("name").value.trim();
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
+    const userData = {
+        nombre: (document.getElementById("name") as HTMLInputElement).value,
+        email: (document.getElementById("email") as HTMLInputElement).value,
+        contrasena: (document.getElementById("password") as HTMLInputElement).value,
+    };
 
-  // Validación simple de contraseña mínima
-  if (password.length < 6) {
-    errorMsg.textContent = "La contraseña debe tener al menos 6 caracteres.";
-    return;
-  }
+    if (userData.contrasena.length < 6) {
+        errorMsg.textContent = "La contraseña debe tener al menos 6 caracteres.";
+        return;
+    }
 
-  try {
-    // Enviamos la solicitud al backend (endpoint de registro)
-    const res = await fetch("http://localhost:8080/api/users/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
-    });
-
-    // Si la respuesta no fue exitosa
-    if (!res.ok) throw new Error("Error al registrar usuario");
-
-    // Convertimos la respuesta en JSON
-    const user = await res.json();
-
-    // Guardamos el usuario en localStorage (auto-login)
-    localStorage.setItem("user", JSON.stringify(user));
-
-    // Redirigimos al home del cliente
-    window.location.href = "../../store/home/home.html";
-
-  } catch (err) {
-    // Mostramos el error si ocurre algo
-    errorMsg.textContent = err.message;
-  }
+    try {
+        const user = await postData("/register", userData);
+        saveAuthData(user.token, user.rol);
+        window.location.href = "../login/login.html";
+    } catch (err: any) {
+        errorMsg.textContent = err.message || "Error al registrar usuario";
+    }
 });
