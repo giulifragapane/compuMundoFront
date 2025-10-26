@@ -3,6 +3,7 @@ import { saveAuthData, getUserRole } from "../../../utils/auth";
 
 const form = document.getElementById("loginForm") as HTMLFormElement;
 const errorMsg = document.getElementById("error") as HTMLParagraphElement;
+const messageEl = document.getElementById("message") as HTMLParagraphElement;
 
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -14,32 +15,23 @@ form.addEventListener("submit", async (e) => {
     };
 
     try {
-        const user = await postData("/login", credentials);
-        saveAuthData(user.token, user.rol);
-
-        
-
-        const role = getUserRole();
-        
-        
-        if (!role) {
-            errorMsg.textContent = "Error al iniciar sesión";
-            return;
+        const res = await postData(PATHS.LOGIN, credentials);
+        // res should be AuthResponse { id, mail, rol, token, nombre }
+        if (res && res.nombre) {
+            messageEl.textContent = `Bienvenido ${res.nombre}`;
+        } else {
+            messageEl.textContent = `Bienvenido ${res.mail}`;
         }
-
-        // Redirección según el rol
-        switch (role.toUpperCase()) {
-            case "ADMIN":
-                window.location.href = "../../../admin/home/home.html";
-                break;
-            case "USUARIO":
-                window.location.href = "../../../client/home/home.html";
-                break;
-            default:
-                errorMsg.textContent = "Rol inválido";
-                break;
+        // save token and role
+        saveAuthData(res.token, res.rol);
+        // optionally redirect based on role
+        const role = getUserRole();
+        if (role === 'ADMIN') {
+            window.location.href = '../../admin/adminHome/adminHome.html';
+        } else {
+            window.location.href = '../../store/home/home.html';
         }
     } catch (err: any) {
-        errorMsg.textContent = err.message || "Error al iniciar sesión";
+        errorMsg.textContent = err.message || "Credenciales incorrectas";
     }
 });
