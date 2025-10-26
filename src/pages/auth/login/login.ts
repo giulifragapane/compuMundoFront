@@ -1,3 +1,5 @@
+
+
 import { postData } from "../../../utils/api";
 import { saveAuthData, getUserRole } from "../../../utils/auth";
 
@@ -9,8 +11,8 @@ form.addEventListener("submit", async (e) => {
     errorMsg.textContent = "";
 
     const credentials = { // Objeto con los datos de inicio de sesión
-        email: (document.getElementById("email") as HTMLInputElement).value,
-        contrasena: (document.getElementById("password") as HTMLInputElement).value,
+        mail: (document.getElementById("email") as HTMLInputElement).value,
+        password: (document.getElementById("password") as HTMLInputElement).value,
     };
 
     try {
@@ -30,10 +32,10 @@ form.addEventListener("submit", async (e) => {
         // Redirección según el rol
         switch (role.toUpperCase()) {
             case "ADMIN":
-                window.location.href = "../../../admin/home/home.html";
+                window.location.href = "../../../admin/adminHome/adminHome.html";
                 break;
             case "USUARIO":
-                window.location.href = "../../../client/home/home.html";
+                window.location.href = "../../../store/home/home.html";
                 break;
             default:
                 errorMsg.textContent = "Rol inválido";
