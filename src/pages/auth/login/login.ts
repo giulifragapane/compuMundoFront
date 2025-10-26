@@ -1,3 +1,5 @@
+
+
 import { postData } from "../../../utils/api";
 import { saveAuthData, getUserRole } from "../../../utils/auth";
 import { PATHS } from "../../../utils/navigate";
@@ -11,8 +13,8 @@ form.addEventListener("submit", async (e) => {
     errorMsg.textContent = "";
 
     const credentials = { // Objeto con los datos de inicio de sesión
-        email: (document.getElementById("email") as HTMLInputElement).value,
-        contrasena: (document.getElementById("password") as HTMLInputElement).value,
+        mail: (document.getElementById("email") as HTMLInputElement).value,
+        password: (document.getElementById("password") as HTMLInputElement).value,
     };
 
     try {
@@ -23,14 +25,18 @@ form.addEventListener("submit", async (e) => {
         } else {
             messageEl.textContent = `Bienvenido ${res.mail}`;
         }
-        // save token and role
-        saveAuthData(res.token, res.rol);
-        // optionally redirect based on role
-        const role = getUserRole();
-        if (role === 'ADMIN') {
-            window.location.href = '../../admin/adminHome/adminHome.html';
-        } else {
-            window.location.href = '../../store/home/home.html';
+
+        // Redirección según el rol
+        switch (role.toUpperCase()) {
+            case "ADMIN":
+                window.location.href = "../../../admin/adminHome/adminHome.html";
+                break;
+            case "USUARIO":
+                window.location.href = "../../../store/home/home.html";
+                break;
+            default:
+                errorMsg.textContent = "Rol inválido";
+                break;
         }
     } catch (err: any) {
         errorMsg.textContent = err.message || "Credenciales incorrectas";
