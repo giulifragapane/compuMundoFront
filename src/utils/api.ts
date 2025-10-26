@@ -1,10 +1,6 @@
 import { getToken } from "./auth";
 
-<<<<<<< HEAD
 // Base URL de tu backend
-const API_BASE_URL = import.meta.env.VITE_API_URL;
-=======
->>>>>>> 41e7172ce8e641eaf8ef8eab6a54101aa2367b00
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 /**

@@ -1,5 +1,6 @@
 import { postData } from "../../../utils/api";
 import { saveAuthData, getUserRole } from "../../../utils/auth";
+import { PATHS } from "../../../utils/navigate";
 
 const form = document.getElementById("loginForm") as HTMLFormElement;
 const errorMsg = document.getElementById("error") as HTMLParagraphElement;
