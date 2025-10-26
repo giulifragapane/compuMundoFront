@@ -1,7 +1,7 @@
 import { getToken } from "./auth";
 
 // Base URL de tu backend
-const API_BASE_URL = "http://localhost:8080/api/users";
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 /**
  * Función genérica para hacer POST al backend.
