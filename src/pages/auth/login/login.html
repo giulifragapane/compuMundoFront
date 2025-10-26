@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SuperFood - Iniciar Sesión</title>
+  <!-- Enlazamos la hoja de estilos -->
+  <link rel="stylesheet" href="auth.css" />
+</head>
+<body>
+  <!-- Contenedor principal centrado -->
+  <div class="auth-container">
+    <div class="auth-card">
+      <!-- Logo o nombre de la app -->
+      <h2 class="logo">SuperFood</h2>
+      <!-- Título del formulario -->
+      <h3>Iniciar Sesión</h3>
+
+      <!-- Formulario de inicio de sesión -->
+      <form id="loginForm">
+        <!-- Campo para ingresar el email -->
+        <label>Email</label>
+        <input type="email" id="email" placeholder="ejemplo@correo.com" required />
+
+        <!-- Campo para ingresar la contraseña -->
+        <label>Contraseña</label>
+        <input type="password" id="password" placeholder="Ingresa tu contraseña" required />
+
+        <!-- Botón de inicio de sesión -->
+        <button type="submit" class="btn-primary">Ingresar</button>
+      </form>
+
+      <!-- Enlace para ir al registro -->
+      <p class="footer-text">¿No tienes cuenta? <a href="../register/register.html">Regístrate</a></p>
+      <!-- Mensaje de error si las credenciales son incorrectas -->
+      <p id="error" class="error"></p>
+    </div>
+  </div>
+
+  <!-- Enlazamos el archivo JavaScript -->
+  <script type="module" src="./login.js"></script>
+</body>
+</html>

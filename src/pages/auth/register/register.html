@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SuperFood - Registro</title>
+  <!-- Reutilizamos el mismo CSS de login -->
+  <link rel="stylesheet" href="../login/auth.css" />
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-card">
+      <h2 class="logo">SuperFood</h2>
+      <h3>Registro</h3>
+
+      <!-- Formulario de registro -->
+      <form id="registerForm">
+        <label>Nombre</label>
+        <input type="text" id="name" placeholder="Ingresa tu nombre completo" required />
+
+        <label>Apellido</label>
+        <input type="text" id="lastName" placeholder="Ingresa tu apellido completo" required />
+
+        <label>Email</label>
+        <input type="email" id="email" placeholder="ejemplo@correo.com" required />
+
+        <label>Contraseña</label>
+        <input type="password" id="password" placeholder="Mínimo 6 caracteres" minlength="6" required />
+
+        <label>Rol</label>
+        <select id="role" required>
+          <option value="USUARIO">Usuario</option>
+          <option value="ADMIN">Administrador</option>
+        </select>
+
+        <!-- Botón de registro -->
+        <button type="submit" class="btn-primary">Registrarse</button>
+      </form>
+
+      <!-- Enlace para ir al login -->
+      <p class="footer-text">¿Ya tienes cuenta? <a href="../login/login.html">Inicia sesión</a></p>
+
+      <!-- Mensaje de error -->
+      <p id="error" class="error"></p>
+    </div>
+  </div>
+
+  <!-- Archivo JS para manejar el registro -->
+  <script type="module" src="./register.js"></script>
+</body>
+</html>
