@@ -1,13 +1,17 @@
 import { getToken } from "./auth";
 
+<<<<<<< HEAD
 // Base URL de tu backend
 const API_BASE_URL = import.meta.env.VITE_API_URL;
+=======
+>>>>>>> 41e7172ce8e641eaf8ef8eab6a54101aa2367b00
 
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 /**
  * Función genérica para hacer POST al backend.
  * Recibe endpoint relativo y datos a enviar.
  */
-export async function postData(endpoint: string, data: any): Promise<any> {
+export async function postData(endpoint: string, data: any): Promise<any> { 
     const token = getToken(); // Obtenemos token para endpoints protegidos
     const headers: Record<string, string> = { "Content-Type": "application/json" };
 

@@ -3,6 +3,7 @@ import { saveAuthData } from "../../../utils/auth";
 
 const form = document.getElementById("registerForm") as HTMLFormElement;
 const errorMsg = document.getElementById("error") as HTMLParagraphElement;
+const messageEl = document.getElementById("message") as HTMLParagraphElement;
 
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -10,8 +11,10 @@ form.addEventListener("submit", async (e) => {
 
     const userData = {
         nombre: (document.getElementById("name") as HTMLInputElement).value,
+        apellido: (document.getElementById("lastName") as HTMLInputElement).value,
         email: (document.getElementById("email") as HTMLInputElement).value,
         contrasena: (document.getElementById("password") as HTMLInputElement).value,
+        rol: (document.getElementById("role") as HTMLSelectElement).value.toUpperCase()
     };
 
     if (userData.contrasena.length < 6) {
@@ -20,9 +23,10 @@ form.addEventListener("submit", async (e) => {
     }
 
     try {
-        const user = await postData("/register", userData);
-        saveAuthData(user.token, user.rol);
-        window.location.href = "../login/login.html";
+        const res = await postData(PATHS.REGISTER, userData);
+        messageEl.textContent = 'Registro completado exitosamente';
+        // after register, optionally redirect
+        setTimeout(()=>{ window.location.href = '../login/login.html'; }, 900);
     } catch (err: any) {
         errorMsg.textContent = err.message || "Error al registrar usuario";
     }
