@@ -1,9 +1,8 @@
 import { postData } from "../../../utils/api";
-import { PATHS } from "../../../utils/navigate";
+import { saveAuthData } from "../../../utils/auth";
 
 const form = document.getElementById("registerForm") as HTMLFormElement;
 const errorMsg = document.getElementById("error") as HTMLParagraphElement;
-const messageEl = document.getElementById("message") as HTMLParagraphElement;
 
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -23,14 +22,9 @@ form.addEventListener("submit", async (e) => {
     }
 
     try {
-        const res = await postData(PATHS.REGISTER, userData);
-        if(res.status(200)){  
-            messageEl.textContent = 'Registro completado exitosamente';
-        }else {
-            throw new Error(`Error en el registro, estado: ${res.status}. Intente nuevamente.`);
-        };
-        // after register, optionally redirect
-        setTimeout(()=>{ window.location.href = '../login/login.html'; }, 900);
+        const user = await postData("/register", userData);
+        saveAuthData(user.token, user.rol);
+        window.location.href = "../login/login.html";
     } catch (err: any) {
         errorMsg.textContent = err.message || "Error al registrar usuario";
     }

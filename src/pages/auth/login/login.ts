@@ -2,11 +2,9 @@
 
 import { postData } from "../../../utils/api";
 import { saveAuthData, getUserRole } from "../../../utils/auth";
-import { PATHS } from "../../../utils/navigate";
 
 const form = document.getElementById("loginForm") as HTMLFormElement;
 const errorMsg = document.getElementById("error") as HTMLParagraphElement;
-const messageEl = document.getElementById("message") as HTMLParagraphElement;
 
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -18,12 +16,17 @@ form.addEventListener("submit", async (e) => {
     };
 
     try {
-        const res = await postData(PATHS.LOGIN, credentials);
-        // res should be AuthResponse { id, mail, rol, token, nombre }
-        if (res && res.nombre) {
-            messageEl.textContent = `Bienvenido ${res.nombre}`;
-        } else {
-            messageEl.textContent = `Bienvenido ${res.mail}`;
+        const user = await postData("/login", credentials);
+        saveAuthData(user.token, user.rol);
+
+        
+
+        const role = getUserRole();
+        
+        
+        if (!role) {
+            errorMsg.textContent = "Error al iniciar sesión";
+            return;
         }
 
         // Redirección según el rol
@@ -39,6 +42,6 @@ form.addEventListener("submit", async (e) => {
                 break;
         }
     } catch (err: any) {
-        errorMsg.textContent = err.message || "Credenciales incorrectas";
+        errorMsg.textContent = err.message || "Error al iniciar sesión";
     }
 });
