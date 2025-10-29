@@ -14,7 +14,8 @@ export async function postData(endpoint: string, data: any): Promise<any> {
         headers["Authorization"] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await fetch(`${API_BASE_URL}${endpoint}` , {
+        //endpoint sin seguridad para login y registro
         method: "POST",
         headers,
         body: JSON.stringify(data),
