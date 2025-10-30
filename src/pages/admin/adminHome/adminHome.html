@@ -4,9 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Food Store — Panel Admin</title>
-  <link rel="stylesheet" href="adminHome.css" />
+  <link rel="stylesheet" href="./adminHome.css" />
    
-    />
   </head>
   <body>
     <!-- Barra superior -->
@@ -16,11 +15,11 @@
       </div>
       <div class="topbar-right">
         <nav class="nav-links">
-          <a href="#">Tienda</a>
+          <a href="/src/pages/store/home/home.html">Tienda</a>
           <a href="#" class="active">Panel Admin</a>
-          <span class="user-name">Juan Pérez</span>
+          <span  id="user-name" class="user-name">Juan Pérez</span> <!--Integrar el nombre de usuario del localstorage-->
         </nav>
-        <button class="btn-logout">Cerrar Sesión</button>
+        <button  id="btn-logout" class="btn-logout">Cerrar Sesión</button>
       </div>
     </header>
 
@@ -31,10 +30,10 @@
         <p class="subtitle">Panel de control</p>
         <nav class="menu">
           <a href="#" class="active"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
-          <a href="#"><i class="fa-solid fa-folder"></i> Categorías</a>
-          <a href="#"><i class="fa-solid fa-burger"></i> Productos</a>
-          <a href="#"><i class="fa-solid fa-box"></i> Pedidos</a>
-          <a href="#"><i class="fa-solid fa-store"></i> Ver Tienda</a>
+          <a href="/src/pages/admin/categories/categories.html"><i class="fa-solid fa-folder"></i> Categorías</a>
+          <a href="/src/pages/admin/products/products.html"><i class="fa-solid fa-burger"></i> Productos</a>
+          <a href="/src/pages/admin/orders/orders.html"><i class="fa-solid fa-box"></i> Pedidos</a>
+          <a href="/src/pages/store/home/home.html"><i class="fa-solid fa-store"></i> Ver Tienda</a>
         </nav>
       </aside>
 
@@ -115,6 +114,6 @@
       </main>
     </div>
 
-    <script src="adminHome.ts"></script>
+    <script type="module" src="./adminHome.ts"></script>
   </body>
 </html>

@@ -1,4 +1,29 @@
+import { logout } from "../../../utils/auth";
 import "./adminHome.css";
+
+const logoutButton = document.getElementById("btn-logout");
+logoutButton?.addEventListener("click", () => {
+  logout();
+  window.location.href = "/src/pages/auth/login/login.html";
+});
+document.addEventListener("DOMContentLoaded", () => {
+  
+  const user = localStorage.getItem("username") || "Administrador";
+  console.log("Bienvenido al Panel de Administración"+ user);
+  
+  // Si existe un usuario en el localStorage, lo mostramos
+  if (user) {
+    // Reemplaza el texto del span
+    const userNameSpan = document.getElementById("user-name");
+    if (userNameSpan) userNameSpan.textContent = user;
+
+  //   // Y también actualiza el mensaje de saludo si existe el elemento
+  //   const greeting = document.getElementById("greeting");
+  //   if (greeting) greeting.textContent = `Hola ${user}, disfruta tus compras`;
+  // }
+  }
+});
+
 
 document.addEventListener("DOMContentLoaded", () => {
   const menuLinks = document.querySelectorAll<HTMLAnchorElement>(".menu a");
