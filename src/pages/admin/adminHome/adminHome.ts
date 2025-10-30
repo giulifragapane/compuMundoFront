@@ -1,63 +1,35 @@
-import { logout } from "../../../utils/auth";
-import { Navbar } from "../../components/navbar/navbar";
-import { SidebarAdmin } from "../../components/sidebar/sidebar";
-import { StatCard } from "../../components/cards/StatCard";
-  
+import "./adminHome.css";
+
 document.addEventListener("DOMContentLoaded", () => {
-  const adminName = localStorage.getItem("adminName");
-  document.getElementById("welcome")!.textContent = `Bienvenido, ${adminName}`;
-  // cualquier otra lógica solo del panel admin
-});
+  const menuLinks = document.querySelectorAll<HTMLAnchorElement>(".menu a");
+  const sections = document.querySelectorAll<HTMLElement>(".section");
 
-const logoutButton = document.getElementById("logoutButton");
-logoutButton?.addEventListener("click", () => {
-  logout();
-  window.location.href = "/src/pages/auth/login/login.html"
-});
+  // Mostrar Dashboard por defecto
+  sections.forEach((s) => s.classList.remove("active"));
+  document.getElementById("dashboard-section")?.classList.add("active");
 
-document.addEventListener("DOMContentLoaded", async () => {
-  const app = document.getElementById("app");
-  if (!app) return;
+  menuLinks.forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
 
-  const navbar = Navbar("Admin");
-  const sidebar = SidebarAdmin();
+      // Quitar clase activa del menú
+      menuLinks.forEach((l) => l.classList.remove("active"));
+      link.classList.add("active");
 
-  const main = document.createElement("div");
-  main.className = "admin-main";
+      // Ocultar todas las secciones
+      sections.forEach((s) => s.classList.remove("active"));
 
-  // Navbar container
-  const navbarContainer = document.createElement("div");
-  navbarContainer.className = "navbar";
-  navbarContainer.appendChild(navbar);
+      // Detectar la sección según texto
+      const text = link.innerText.trim().toLowerCase();
+      let targetId = "";
 
-  // Título
-  const title = document.createElement("h2");
-  title.textContent = "Panel de Administración";
+      if (text.includes("dashboard")) targetId = "dashboard-section";
+      else if (text.includes("categorías")) targetId = "categorias-section";
+      else if (text.includes("productos")) targetId = "productos-section";
+      else if (text.includes("pedidos")) targetId = "pedidos-section";
+      else if (text.includes("tienda")) targetId = "tienda-section";
 
-  // Stats
-  const stats: { title: string; value: number; color: "blue" | "pink" | "cyan" | "green" }[] = [
-    { title: "Categorías", value: 8, color: "blue" },
-    { title: "Productos", value: 120, color: "pink" },
-    { title: "Pedidos", value: 54, color: "cyan" },
-    { title: "Disponibles", value: 112, color: "green" },
-  ];
-
-  const statsContainer = document.createElement("div");
-  statsContainer.className = "stats-grid";
-
-  stats.forEach(s => {
-    const card = StatCard(s.title, s.value, s.color);
-    statsContainer.appendChild(card);
+      document.getElementById(targetId)?.classList.add("active");
+    });
   });
-
-  // Summary
-  const summary = document.createElement("section");
-  summary.className = "summary-panel";
-  summary.innerHTML = `
-    <h3>Resumen Rápido</h3>
-    <p>Cargando estadísticas...</p>
-  `;
-
-  main.append(navbarContainer, title, statsContainer, summary);
-  app.append(sidebar, main);
 });
