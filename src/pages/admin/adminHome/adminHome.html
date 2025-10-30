@@ -1,14 +1,122 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Panel Admin</title>
-</head>
-<body>
-  <h1>Bienvenido al panel de administración</h1>
-  <div id="admin-content"></div>
-  <button id="logoutButton">Logout</button>
-  <script type="module" src="/src/pages/admin/adminHome/adminHome.ts"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Food Store — Panel Admin</title>
+  <link rel="stylesheet" href="./adminHome.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <!-- Barra superior -->
+    <header class="topbar">
+      <div class="brand-left">
+        <a href="#" class="brand"><i class="fa-solid fa-pizza-slice"></i> Food Store</a>
+      </div>
+      <div class="topbar-right">
+        <nav class="nav-links">
+          <a href="#">Tienda</a>
+          <a href="#" class="active">Panel Admin</a>
+          <span class="user-name">Juan Pérez</span>
+        </nav>
+        <button class="btn-logout">Cerrar Sesión</button>
+      </div>
+    </header>
+
+    <div class="container">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <h3>Administración</h3>
+        <p class="subtitle">Panel de control</p>
+        <nav class="menu">
+          <a href="#" class="active"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+          <a href="#"><i class="fa-solid fa-folder"></i> Categorías</a>
+          <a href="#"><i class="fa-solid fa-burger"></i> Productos</a>
+          <a href="#"><i class="fa-solid fa-box"></i> Pedidos</a>
+          <a href="#"><i class="fa-solid fa-store"></i> Ver Tienda</a>
+        </nav>
+      </aside>
+
+      <!-- Contenido principal -->
+      <main class="main">
+        <!-- Dashboard -->
+        <section id="dashboard-section" class="section active">
+          <h2>Panel de Administración</h2>
+          <div class="cards">
+            <div class="card gradient-purple">
+              <h4><i class="fa-solid fa-folder"></i> Categorías</h4>
+              <p class="value">0</p>
+              <button>Gestionar</button>
+            </div>
+            <div class="card gradient-pink">
+              <h4><i class="fa-solid fa-burger"></i> Productos</h4>
+              <p class="value">0</p>
+              <button>Gestionar</button>
+            </div>
+            <div class="card gradient-blue">
+              <h4><i class="fa-solid fa-box"></i> Pedidos</h4>
+              <p class="value">0</p>
+              <button>Gestionar</button>
+            </div>
+            <div class="card gradient-green">
+              <h4><i class="fa-solid fa-check"></i> Disponibles</h4>
+              <p class="value">0</p>
+              <span class="info">Productos activos</span>
+            </div>
+          </div>
+
+          <section class="resume">
+            <h4><i class="fa-solid fa-chart-column"></i> Resumen Rápido</h4>
+            <p>Cargando estadísticas...</p>
+          </section>
+        </section>
+
+        <!-- Categorías -->
+        <section id="categorias-section" class="section">
+          <div class="categorias-header">
+            <h2>Gestión de Categorías</h2>
+            <button class="btn-green"><i class="fa-solid fa-plus"></i> Nueva Categoría</button>
+          </div>
+
+          <div class="categorias-list">
+            <div class="categoria-item">
+              <img src="https://via.placeholder.com/80" alt="Imagen categoría" />
+              <span>Hamburguesas</span>
+            </div>
+            <div class="categoria-item">
+              <img src="https://via.placeholder.com/80" alt="Imagen categoría" />
+              <span>Pizzas</span>
+            </div>
+            <div class="categoria-item">
+              <img src="https://via.placeholder.com/80" alt="Imagen categoría" />
+              <span>Bebidas</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Productos -->
+        <section id="productos-section" class="section">
+          <h2>Gestión de Productos</h2>
+          <p>Aquí se mostrarán los productos registrados.</p>
+        </section>
+
+        <!-- Pedidos -->
+        <section id="pedidos-section" class="section">
+          <h2>Gestión de Pedidos</h2>
+          <p>Listado de pedidos realizados por los clientes.</p>
+        </section>
+
+        <!-- Tienda -->
+        <section id="tienda-section" class="section">
+          <h2>Vista de Tienda</h2>
+          <p>Acceso a la visualización pública de la tienda.</p>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
 </html>
