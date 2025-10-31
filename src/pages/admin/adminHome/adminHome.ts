@@ -69,7 +69,7 @@ function abrirFormulario(modo: "categoria" | "producto", datos: any = null) {
 
   // Generar formulario dinámico
   if (modo === "categoria") {
-    formContainer.innerHTML = `
+    formContainer.innerHTML = ` 
       <label>Nombre</label>
       <input id="nombre" type="text" value="${datos?.nombre ?? ""}" required>
       <label>Descripción</label>
@@ -179,7 +179,7 @@ async function cargarCategorias() {
       tablaCategorias.appendChild(tr);
     });
 
-  agregarEventosCategorias();
+  agregarEventosCategorias(); 
 }
 
 async function cargarProductos() {
