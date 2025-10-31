@@ -4,9 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Food Store — Panel Admin</title>
-  <link rel="stylesheet" href="./adminHome.css" />
-   
+    <link rel="stylesheet" href="./adminHome.css" />
+    <script
+      src="https://kit.fontawesome.com/a2e0b0a4e4.js"
+      crossorigin="anonymous"
+    ></script>
   </head>
+
   <body>
     <!-- Barra superior -->
     <header class="topbar">
@@ -17,9 +21,9 @@
         <nav class="nav-links">
           <a href="/src/pages/store/home/home.html">Tienda</a>
           <a href="#" class="active">Panel Admin</a>
-          <span  id="user-name" class="user-name">Juan Pérez</span> <!--Integrar el nombre de usuario del localstorage-->
+          <span id="user-name" class="user-name"></span>
         </nav>
-        <button  id="btn-logout" class="btn-logout">Cerrar Sesión</button>
+        <button id="btn-logout" class="btn-logout">Cerrar Sesión</button>
       </div>
     </header>
 
@@ -30,9 +34,9 @@
         <p class="subtitle">Panel de control</p>
         <nav class="menu">
           <a href="#" class="active"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
-          <a href="/src/pages/admin/categories/categories.html"><i class="fa-solid fa-folder"></i> Categorías</a>
-          <a href="/src/pages/admin/products/products.html"><i class="fa-solid fa-burger"></i> Productos</a>
-          <a href="/src/pages/admin/orders/orders.html"><i class="fa-solid fa-box"></i> Pedidos</a>
+          <a href="#" id="menu-categorias"><i class="fa-solid fa-folder"></i> Categorías</a>
+          <a href="#" id="menu-productos"><i class="fa-solid fa-burger"></i> Productos</a>
+          <a href="#" id="menu-pedidos"><i class="fa-solid fa-box"></i> Pedidos</a>
           <a href="/src/pages/store/home/home.html"><i class="fa-solid fa-store"></i> Ver Tienda</a>
         </nav>
       </aside>
@@ -45,22 +49,22 @@
           <div class="cards">
             <div class="card gradient-purple">
               <h4><i class="fa-solid fa-folder"></i> Categorías</h4>
-              <p class="value">0</p>
-              <button>Gestionar</button>
+              <p class="value" id="count-categorias">0</p>
+              <button id="btn-gestionar-categorias">Gestionar</button>
             </div>
             <div class="card gradient-pink">
               <h4><i class="fa-solid fa-burger"></i> Productos</h4>
-              <p class="value">0</p>
-              <button>Gestionar</button>
+              <p class="value" id="count-productos">0</p>
+              <button id="btn-gestionar-productos">Gestionar</button>
             </div>
             <div class="card gradient-blue">
               <h4><i class="fa-solid fa-box"></i> Pedidos</h4>
-              <p class="value">0</p>
+              <p class="value" id="count-pedidos">0</p>
               <button>Gestionar</button>
             </div>
             <div class="card gradient-green">
               <h4><i class="fa-solid fa-check"></i> Disponibles</h4>
-              <p class="value">0</p>
+              <p class="value" id="count-activos">0</p>
               <span class="info">Productos activos</span>
             </div>
           </div>
@@ -71,33 +75,54 @@
           </section>
         </section>
 
-        <!-- //Categorías -->
+        <!-- Categorías -->
         <section id="categorias-section" class="section">
-          <div class="categorias-header">
+          <div class="header-section">
             <h2>Gestión de Categorías</h2>
-            <button class="btn-green"><i class="fa-solid fa-plus"></i> Nueva Categoría</button>
+            <button id="btn-nueva-categoria" class="btn-green">
+              <i class="fa-solid fa-plus"></i> Nueva Categoría
+            </button>
           </div>
 
-          <div class="categorias-list">
-            <div class="categoria-item">
-              <img src="https://via.placeholder.com/80" alt="Imagen categoría" />
-              <span>Hamburguesas</span>
-            </div>
-            <div class="categoria-item">
-              <img src="https://via.placeholder.com/80" alt="Imagen categoría" />
-              <span>Pizzas</span>
-            </div>
-            <div class="categoria-item">
-              <img src="https://via.placeholder.com/80" alt="Imagen categoría" />
-              <span>Bebidas</span>
-            </div>
-          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Imagen</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-categorias"></tbody>
+          </table>
         </section>
 
         <!-- Productos -->
         <section id="productos-section" class="section">
-          <h2>Gestión de Productos</h2>
-          <p>Aquí se mostrarán los productos registrados.</p>
+          <div class="header-section">
+            <h2>Gestión de Productos</h2>
+            <button id="btn-nuevo-producto" class="btn-green">
+              <i class="fa-solid fa-plus"></i> Nuevo Producto
+            </button>
+          </div>
+
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Imagen</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Categoría</th>
+                <th>Disponible</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-productos"></tbody>
+          </table>
         </section>
 
         <!-- Pedidos -->
@@ -106,14 +131,18 @@
           <p>Listado de pedidos realizados por los clientes.</p>
         </section>
 
-        <!-- Tienda -->
-        <section id="tienda-section" class="section">
-          <h2>Vista de Tienda</h2>
-          <p>Acceso a la visualización pública de la tienda.</p>
-        </section>
+        <!-- Formulario dinámico -->
+        <div id="form-modal" class="modal hidden">
+          <div class="modal-content">
+            <span id="close-modal" class="close-btn">&times;</span>
+            <h3 id="form-title">Nueva Categoría</h3>
+            <form id="formulario-dinamico"></form>
+          </div>
+        </div>
       </main>
     </div>
 
     <script type="module" src="./adminHome.ts"></script>
   </body>
 </html>
+
