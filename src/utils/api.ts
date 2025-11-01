@@ -1,49 +1,29 @@
 import { getToken } from "./auth";
 
-
 const API_BASE_URL = import.meta.env.VITE_API_URL;
-/**
- * Función genérica para hacer POST al backend.
- * Recibe endpoint relativo y datos a enviar.
- */
-export async function postData(endpoint: string, data: any): Promise<any> { 
-    const token = getToken(); // Obtenemos token para endpoints protegidos
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
 
-    if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-    }
+async function request(method: string, endpoint: string, data?: any): Promise<any> {
+  const token = getToken();
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}` , {
-        //endpoint sin seguridad para login y registro
-        method: "POST",
-        headers,
-        body: JSON.stringify(data),
-    });
+  const options: RequestInit = { method, headers };
+  if (data) options.body = JSON.stringify(data);
 
-    if (!response.ok) {
-        const text = await response.text();
-        throw new Error(text || `Error ${response.status}`);
-    }
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
 
-    return response.json(); // Retorna la respuesta parseada
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text || `Error ${response.status}`);
+  }
+
+  return response.json();
 }
 
-/**
- * Función genérica para hacer GET al backend con token si aplica.
- */
-export async function getData(endpoint: string): Promise<any> {
-    const token = getToken();
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, { method: "GET", headers });
-
-    if (!response.ok) {
-        const text = await response.text();
-        throw new Error(text || `Error ${response.status})`);
-    }
-
-    return response.json();
-}
+// Métodos CRUD genéricos
+export const api = {
+  get: (endpoint: string) => request("GET", endpoint),
+  post: (endpoint: string, data: any) => request("POST", endpoint, data),
+  put: (endpoint: string, data: any) => request("PUT", endpoint, data),
+  del: (endpoint: string) => request("DELETE", endpoint),
+};

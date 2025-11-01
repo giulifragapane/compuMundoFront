@@ -1,5 +1,20 @@
 import { logout } from "../../../utils/auth";
 import "./adminHome.css";
+import {
+  obtenerCategorias,
+  obtenerCategoriaPorId,
+  crearCategoria,
+  actualizarCategoria,
+  eliminarCategoria,
+} from "../categories/categories";
+
+import {
+  obtenerProductos,
+  obtenerProductoPorId,
+  crearProducto,
+  actualizarProducto,
+  eliminarProducto,
+} from "../products/products";
 
 // ---------------------- LOGOUT Y USUARIO ----------------------
 const logoutButton = document.getElementById("btn-logout");
@@ -15,6 +30,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const userNameSpan = document.getElementById("user-name");
   if (userNameSpan) userNameSpan.textContent = user;
 });
+
+async function initDashboard() {
+  const role = localStorage.getUserRole();
+  if (role === "ADMIN") {
+    await cargarCategorias();
+    await cargarProductos();
+  }
+}
 
 // ---------------------- VARIABLES GLOBALES ----------------------
 let modoActual: "categoria" | "producto" | null = null;
@@ -119,49 +142,60 @@ formContainer.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!modoActual) return;
 
-  const urlBase =
-    modoActual === "categoria"
-      ? "http://localhost:8080/api/categorias"
-      : "http://localhost:8080/api/productos";
-
+  // --- Construcción de datos según el modo ---
   const data =
     modoActual === "categoria"
       ? {
-          nombre: (document.getElementById("nombre") as HTMLInputElement).value,
-          descripcion: (document.getElementById("descripcion") as HTMLTextAreaElement).value,
-          imagen: (document.getElementById("imagen") as HTMLInputElement).value,
+          nombre: (document.getElementById("nombre") as HTMLInputElement).value.trim(),
+          descripcion: (document.getElementById("descripcion") as HTMLTextAreaElement).value.trim(),
+          imagen: (document.getElementById("imagen") as HTMLInputElement).value.trim(),
           eliminado: false,
         }
       : {
-          nombre: (document.getElementById("nombre") as HTMLInputElement).value,
-          descripcion: (document.getElementById("descripcion") as HTMLTextAreaElement).value,
+          nombre: (document.getElementById("nombre") as HTMLInputElement).value.trim(),
+          descripcion: (document.getElementById("descripcion") as HTMLTextAreaElement).value.trim(),
           precio: parseFloat((document.getElementById("precio") as HTMLInputElement).value),
           stock: parseInt((document.getElementById("stock") as HTMLInputElement).value),
           categoria: (document.getElementById("categoria") as HTMLSelectElement).value,
-          imagen: (document.getElementById("imagen") as HTMLInputElement).value,
+          imagen: (document.getElementById("imagen") as HTMLInputElement).value.trim(),
           disponible: (document.getElementById("disponible") as HTMLInputElement)?.checked ?? false,
           eliminado: false,
         };
 
-  await fetch(idEditando ? `${urlBase}/${idEditando}` : urlBase, {
-    method: idEditando ? "PUT" : "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
+  try {
+    // --- Diferenciar creación vs actualización ---
+    if (modoActual === "categoria") {
+      if (idEditando) {
+        await actualizarCategoria(idEditando, data);
+      } else {
+        await crearCategoria(data);
+      }
+      await cargarCategorias(); // refrescar tabla
+    } else if (modoActual === "producto") {
+      if (idEditando) {
+        await actualizarProducto(idEditando, data);
+      } else {
+        await crearProducto(data);
+      }
+      await cargarProductos(); // refrescar tabla
+    }
 
-  modal.classList.add("hidden");
-  idEditando = null;
-  modoActual = null;
+    // --- Resetear modal y estados ---
+    modal.classList.add("hidden");
+    idEditando = null;
+    modoActual = null;
 
-  if (modoActual === "categoria") await cargarCategorias();
-  else await cargarProductos();
+  } catch (error: any) {
+    console.error("Error al guardar:", error);
+    alert(error.message || "Ocurrió un error al guardar los datos.");
+  }
 });
 
-// ---------------------- CARGAR DATOS DESDE BACKEND ----------------------
+
+// ---------------------- FUNCIONES DE CARGA ----------------------
 async function cargarCategorias() {
   tablaCategorias.innerHTML = "";
-  const resp = await fetch("http://localhost:8080/api/categorias");
-  const categorias = await resp.json();
+  const categorias = await obtenerCategorias();
 
   categorias
     .filter((c: any) => !c.eliminado)
@@ -170,22 +204,20 @@ async function cargarCategorias() {
       tr.innerHTML = `
         <td>${c.nombre}</td>
         <td>${c.descripcion}</td>
-        <td><img src="${c.imagen}" alt="${c.nombre}" width="60"></td>
+        <td><img src="${c.imagen}" width="60"></td>
         <td>
           <button class="editar" data-id="${c.id}">✏️</button>
           <button class="eliminar" data-id="${c.id}">🗑️</button>
-        </td>
-      `;
+        </td>`;
       tablaCategorias.appendChild(tr);
     });
 
-  agregarEventosCategorias(); 
+  agregarEventosCategorias();
 }
 
 async function cargarProductos() {
   tablaProductos.innerHTML = "";
-  const resp = await fetch("http://localhost:8080/api/productos");
-  const productos = await resp.json();
+  const productos = await obtenerProductos();
 
   productos
     .filter((p: any) => !p.eliminado)
@@ -197,39 +229,33 @@ async function cargarProductos() {
         <td>${p.precio}</td>
         <td>${p.stock}</td>
         <td>${p.categoria}</td>
-        <td><img src="${p.imagen}" alt="${p.nombre}" width="60"></td>
+        <td><img src="${p.imagen}" width="60"></td>
         <td>${p.disponible ? "✅" : "❌"}</td>
         <td>
           <button class="editar" data-id="${p.id}">✏️</button>
           <button class="eliminar" data-id="${p.id}">🗑️</button>
-        </td>
-      `;
+        </td>`;
       tablaProductos.appendChild(tr);
     });
 
   agregarEventosProductos();
 }
 
-// ---------------------- EVENTOS DE EDITAR Y ELIMINAR ----------------------
+// ---------------------- EVENTOS ----------------------
 function agregarEventosCategorias() {
   document.querySelectorAll("#tabla-categorias .editar").forEach((btn) => {
     btn.addEventListener("click", async (e) => {
-      const id = (e.currentTarget as HTMLElement).getAttribute("data-id");
-      const resp = await fetch(`http://localhost:8080/api/categorias/${id}`);
-      const categoria = await resp.json();
+      const id = Number((e.currentTarget as HTMLElement).dataset.id);
+      const categoria = await obtenerCategoriaPorId(id);
       abrirFormulario("categoria", categoria);
     });
   });
 
   document.querySelectorAll("#tabla-categorias .eliminar").forEach((btn) => {
     btn.addEventListener("click", async (e) => {
-      const id = (e.currentTarget as HTMLElement).getAttribute("data-id");
-      if (confirm("¿Seguro que deseas eliminar esta categoría?")) {
-        await fetch(`http://localhost:8080/api/categorias/${id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ eliminado: true }),
-        });
+      const id = Number((e.currentTarget as HTMLElement).dataset.id);
+      if (confirm("¿Eliminar categoría?")) {
+        await eliminarCategoria(id);
         await cargarCategorias();
       }
     });
@@ -239,22 +265,17 @@ function agregarEventosCategorias() {
 function agregarEventosProductos() {
   document.querySelectorAll("#tabla-productos .editar").forEach((btn) => {
     btn.addEventListener("click", async (e) => {
-      const id = (e.currentTarget as HTMLElement).getAttribute("data-id");
-      const resp = await fetch(`http://localhost:8080/api/productos/${id}`);
-      const producto = await resp.json();
+      const id = Number((e.currentTarget as HTMLElement).dataset.id);
+      const producto = await obtenerProductoPorId(id);
       abrirFormulario("producto", producto);
     });
   });
 
   document.querySelectorAll("#tabla-productos .eliminar").forEach((btn) => {
     btn.addEventListener("click", async (e) => {
-      const id = (e.currentTarget as HTMLElement).getAttribute("data-id");
-      if (confirm("¿Seguro que deseas eliminar este producto?")) {
-        await fetch(`http://localhost:8080/api/productos/${id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ eliminado: true }),
-        });
+      const id = Number((e.currentTarget as HTMLElement).dataset.id);
+      if (confirm("¿Eliminar producto?")) {
+        await eliminarProducto(id);
         await cargarProductos();
       }
     });
@@ -262,7 +283,4 @@ function agregarEventosProductos() {
 }
 
 // ---------------------- INICIALIZACIÓN ----------------------
-document.addEventListener("DOMContentLoaded", () => {
-  cargarCategorias();
-  cargarProductos();
-});
+document.addEventListener("DOMContentLoaded", initDashboard);
