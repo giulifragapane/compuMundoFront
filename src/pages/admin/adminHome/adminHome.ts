@@ -212,51 +212,84 @@ formContainer.addEventListener("submit", async (e) => {
 // ---------------------- FUNCIONES DE CARGA ----------------------
 async function cargarCategorias() {
   tablaCategorias.innerHTML = "";
-  const categorias = await obtenerCategorias();
-  
-  categorias
-    .filter((c: any) => !c.eliminado)
-    .forEach((c: any) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${c.nombre}</td>
-        <td>
-          <button class="editar" data-id="${c.id}">✏️</button>
-          <button class="eliminar" data-id="${c.id}">🗑️</button>
-        </td>`;
-        console.log(c.nombre);
-      tablaCategorias.appendChild(tr);
-    });
 
-  agregarEventosCategorias();
+  try {
+    const categorias = await obtenerCategorias();
+
+    categorias
+      .filter((c: any) => !c.eliminado)
+      .forEach((c: any) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${c.id ?? "-"}</td>
+          <td>
+            <img 
+              src="${c.imagen ?? 'https://via.placeholder.com/60'}" 
+              alt="${c.nombre ?? 'Sin nombre'}" 
+              width="60"
+            >
+          </td>
+          <td>${c.nombre ?? "Sin nombre"}</td>
+          <td>${c.descripcion ?? "Sin descripción"}</td>
+          <td>
+            <button class="editar" data-id="${c.id}">✏️</button>
+            <button class="eliminar" data-id="${c.id}">🗑️</button>
+          </td>
+        `;
+        tablaCategorias.appendChild(tr);
+      });
+
+    agregarEventosCategorias();
+  } catch (error) {
+    console.error("Error al cargar categorías:", error);
+    tablaCategorias.innerHTML = `
+      <tr><td colspan="5" style="color:red;">Error al cargar categorías.</td></tr>
+    `;
+  }
 }
 
 async function cargarProductos() {
   tablaProductos.innerHTML = "";
-  const productos = await obtenerProductos();
 
-  productos
-    .filter((p: any) => !p.eliminado)
-    .forEach((p: any) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${p.nombre}</td>
-        <td>${p.descripcion}</td>
-        <td>${p.precio}</td>
-        <td>${p.stock}</td>
-        <td>${p.categoria}</td>
-        <td><img src="${p.imagen}" width="60"></td>
-        <td>${p.disponible ? "✅" : "❌"}</td>
-        <td>
-          <button class="editar" data-id="${p.id}">✏️</button>
-          <button class="eliminar" data-id="${p.id}">🗑️</button>
-        </td>`;
-      tablaProductos.appendChild(tr);
-    });
+  try {
+    const productos = await obtenerProductos();
 
-  agregarEventosProductos();
+    productos
+      .filter((p: any) => !p.eliminado)
+      .forEach((p: any) => {
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+          <td>${p.id ?? "-"}</td>
+          <td>
+            <img 
+              src="${p.imagen ?? 'https://via.placeholder.com/60'}" 
+              alt="${p.nombre ?? 'Sin nombre'}" 
+              width="60"
+            >
+          </td>
+          <td>${p.nombre ?? "Sin nombre"}</td>
+          <td>${p.descripcion ?? "Sin descripción"}</td>
+          <td>${p.precio ? `$${p.precio.toFixed(2)}` : "$0.00"}</td>
+          <td>${p.stock ?? 0}</td>
+          <td>${p.categoria?.nombre ?? "Sin categoría"}</td>
+          <td>${p.disponible ? "✅" : "❌"}</td>
+          <td>
+            <button class="editar" data-id="${p.id}">✏️</button>
+            <button class="eliminar" data-id="${p.id}">🗑️</button>
+          </td>
+        `;
+        tablaProductos.appendChild(tr);
+      });
+
+    agregarEventosProductos();
+  } catch (error) {
+    console.error("Error al cargar productos:", error);
+    tablaProductos.innerHTML = `
+      <tr><td colspan="9" style="color:red;">Error al cargar productos.</td></tr>
+    `;
+  }
 }
-
 // ---------------------- EVENTOS ----------------------
 function agregarEventosCategorias() {
   document.querySelectorAll("#tabla-categorias .editar").forEach((btn) => {
