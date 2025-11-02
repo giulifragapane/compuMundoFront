@@ -256,12 +256,20 @@ async function cargarProductos() {
   tablaProductos.innerHTML = "";
 
   try {
-    const productos = await obtenerProductos();
+    const [productos, categorias] = await Promise.all([
+      obtenerProductos(),
+      obtenerCategorias()
+    ]);
+    
+    const categoriasMap = new Map(
+      categorias.map((c: any) => [c.id, c.nombre])
+    );
 
     productos
       .filter((p: any) => !p.eliminado)
       .forEach((p: any) => {
         const tr = document.createElement("tr");
+        const categoriaNombre = categoriasMap.get(p.categoria?.id || p.categoria) || "Sin categoría";
         tr.innerHTML = `
           <td>${p.id ?? "-"}</td>
           <td>
@@ -275,7 +283,7 @@ async function cargarProductos() {
           <td>${p.descripcion || "Sin descripción"}</td>
           <td>${p.precio ? `$${p.precio.toFixed(2)}` : "$0.00"}</td>
           <td>${p.stock ?? 0}</td>
-          <td>${p.categoria?.nombre || "Sin categoría"}</td>
+          <td>${categoriaNombre}</td>
           <td>${p.disponible ? "✅" : "❌"}</td>
           <td>
             <button class="editar btn-edit" data-id="${p.id}">✏️</button>
