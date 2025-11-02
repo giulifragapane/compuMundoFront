@@ -24,20 +24,15 @@ logoutButton?.addEventListener("click", () => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-  const user = localStorage.getItem("username") || "Administrador";
-  console.log("Bienvenido al Panel de Administración " + user);
+  cargarCategorias();
+  cargarProductos();
 
+  const user = localStorage.getItem("username") || "Administrador";
   const userNameSpan = document.getElementById("user-name");
   if (userNameSpan) userNameSpan.textContent = user;
 });
 
-async function initDashboard() {
-  const role = localStorage.getUserRole();
-  if (role === "ADMIN") {
-    await cargarCategorias();
-    await cargarProductos();
-  }
-}
+
 
 // ---------------------- VARIABLES GLOBALES ----------------------
 let modoActual: "categoria" | "producto" | null = null;
@@ -52,8 +47,8 @@ const formTitle = document.getElementById("form-title")!;
 const formContainer = document.getElementById("formulario-dinamico")!;
 const btnNuevaCategoria = document.getElementById("btn-nueva-categoria")!;
 const btnNuevoProducto = document.getElementById("btn-nuevo-producto")!;
-const tablaCategorias = document.querySelector("#tabla-categorias tbody") as HTMLElement;
-const tablaProductos = document.querySelector("#tabla-productos tbody") as HTMLElement;
+const tablaCategorias = document.querySelector("tabla-categorias") as HTMLElement;
+const tablaProductos = document.querySelector("tabla-productos") as HTMLElement;
 
 // ---------------------- NAVEGACIÓN ENTRE SECCIONES ----------------------
 sections.forEach((s) => s.classList.remove("active"));
@@ -95,10 +90,6 @@ function abrirFormulario(modo: "categoria" | "producto", datos: any = null) {
     formContainer.innerHTML = ` 
       <label>Nombre</label>
       <input id="nombre" type="text" value="${datos?.nombre ?? ""}" required>
-      <label>Descripción</label>
-      <textarea id="descripcion" required>${datos?.descripcion ?? ""}</textarea>
-      <label>URL de la Imagen</label>
-      <input id="imagen" type="url" value="${datos?.imagen ?? ""}" required>
       <button type="submit" class="btn-green">${datos ? "Actualizar" : "Guardar"}</button>
     `;
   } else {
@@ -106,11 +97,11 @@ function abrirFormulario(modo: "categoria" | "producto", datos: any = null) {
       <label>Nombre</label>
       <input id="nombre" type="text" value="${datos?.nombre ?? ""}" required>
       <label>Descripción</label>
-      <textarea id="descripcion" required>${datos?.descripcion ?? ""}</textarea>
+      <textarea id="descripcion" >${datos?.descripcion ?? ""}</textarea>
       <label>Precio</label>
       <input id="precio" type="number" step="0.01" min="0" value="${datos?.precio ?? ""}" required>
       <label>Stock</label>
-      <input id="stock" type="number" min="0" value="${datos?.stock ?? ""}" required>
+      <input id="stock" type="number" min="0" value="${datos?.stock ?? ""}" >
       <label>Categoría</label>
       <select id="categoria" required>
         <option value="">Seleccionar</option>
@@ -119,7 +110,7 @@ function abrirFormulario(modo: "categoria" | "producto", datos: any = null) {
         <option value="Bebidas" ${datos?.categoria === "Bebidas" ? "selected" : ""}>Bebidas</option>
       </select>
       <label>URL de la Imagen</label>
-      <input id="imagen" type="url" value="${datos?.imagen ?? ""}" required>
+      <input id="imagen" type="url" value="${datos?.imagen ?? ""}" >
       <label class="checkbox-label">
         <input id="disponible" type="checkbox" ${datos?.disponible ? "checked" : ""}> Disponible
       </label>
@@ -147,18 +138,18 @@ formContainer.addEventListener("submit", async (e) => {
     modoActual === "categoria"
       ? {
           nombre: (document.getElementById("nombre") as HTMLInputElement).value.trim(),
-          descripcion: (document.getElementById("descripcion") as HTMLTextAreaElement).value.trim(),
-          imagen: (document.getElementById("imagen") as HTMLInputElement).value.trim(),
+          //descripcion: (document.getElementById("descripcion") as HTMLTextAreaElement).value.trim(),
+          //imagen: (document.getElementById("imagen") as HTMLInputElement).value.trim(),
           eliminado: false,
         }
       : {
           nombre: (document.getElementById("nombre") as HTMLInputElement).value.trim(),
-          descripcion: (document.getElementById("descripcion") as HTMLTextAreaElement).value.trim(),
+          //descripcion: (document.getElementById("descripcion") as HTMLTextAreaElement).value.trim(),
           precio: parseFloat((document.getElementById("precio") as HTMLInputElement).value),
-          stock: parseInt((document.getElementById("stock") as HTMLInputElement).value),
+          //stock: parseInt((document.getElementById("stock") as HTMLInputElement).value),
           categoria: (document.getElementById("categoria") as HTMLSelectElement).value,
-          imagen: (document.getElementById("imagen") as HTMLInputElement).value.trim(),
-          disponible: (document.getElementById("disponible") as HTMLInputElement)?.checked ?? false,
+          //imagen: (document.getElementById("imagen") as HTMLInputElement).value.trim(),
+          //disponible: (document.getElementById("disponible") as HTMLInputElement)?.checked ?? false,
           eliminado: false,
         };
 
@@ -196,19 +187,18 @@ formContainer.addEventListener("submit", async (e) => {
 async function cargarCategorias() {
   tablaCategorias.innerHTML = "";
   const categorias = await obtenerCategorias();
-
+  
   categorias
     .filter((c: any) => !c.eliminado)
     .forEach((c: any) => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${c.nombre}</td>
-        <td>${c.descripcion}</td>
-        <td><img src="${c.imagen}" width="60"></td>
         <td>
           <button class="editar" data-id="${c.id}">✏️</button>
           <button class="eliminar" data-id="${c.id}">🗑️</button>
         </td>`;
+        console.log(c.nombre);
       tablaCategorias.appendChild(tr);
     });
 
@@ -282,5 +272,3 @@ function agregarEventosProductos() {
   });
 }
 
-// ---------------------- INICIALIZACIÓN ----------------------
-document.addEventListener("DOMContentLoaded", initDashboard);

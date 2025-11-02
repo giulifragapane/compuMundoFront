@@ -9,6 +9,11 @@
   --success: #2ecc71;
   --success-hover: #27ae60;
   --blue: #74b9ff;
+
+  --gradient-purple: linear-gradient(135deg, #3d1c99, #5a3ec6);
+  --gradient-pink: linear-gradient(135deg, #f74b4b, #ff6f61);
+  --gradient-blue: linear-gradient(135deg, #0072ff, #4098ff);
+  --gradient-green: linear-gradient(135deg, #0fb56d, #2ed47a);
 }
 
 /* ====== BASE ====== */
@@ -179,8 +184,8 @@ body {
 }
 
 .card button {
-  background: var(--primary);
-  color: var(--white);
+  background: var(--white);
+  color:var(--gray);
   border: 3px solid var(--primary-dark);
   padding: 6px 12px;
   border-radius: 6px;
@@ -190,23 +195,19 @@ body {
 }
 
 .card button:hover {
-  background: var(--primary-dark);
+  background: var(--text-dark);
 }
-
 .gradient-purple {
-  background: linear-gradient(135deg, #3d1c99, #5a3ec6);
+  background: var(--gradient-purple)
 }
-
 .gradient-pink {
-  background: linear-gradient(135deg, #f74b4b, #ff6f61);
+  background: var(--gradient-pink);
 }
-
 .gradient-blue {
-  background: linear-gradient(135deg, #0072ff, #4098ff);
+  background: var(--gradient-blue);
 }
-
 .gradient-green {
-  background: linear-gradient(135deg, #0fb56d, #2ed47a);
+  background: var(--gradient-green);
 }
 
 /* ====== SECCIONES ====== */
