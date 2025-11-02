@@ -6,7 +6,7 @@ import {
   crearCategoria,
   actualizarCategoria,
   eliminarCategoria,
-} from "../categories/categories";
+} from "../categories/categories.ts";
 
 import {
   obtenerProductos,
@@ -14,7 +14,7 @@ import {
   crearProducto,
   actualizarProducto,
   eliminarProducto,
-} from "../products/products";
+} from "../products/products.ts";
 
 // ---------------------- LOGOUT Y USUARIO ----------------------
 const logoutButton = document.getElementById("btn-logout");
@@ -47,8 +47,8 @@ const formTitle = document.getElementById("form-title")!;
 const formContainer = document.getElementById("formulario-dinamico")!;
 const btnNuevaCategoria = document.getElementById("btn-nueva-categoria")!;
 const btnNuevoProducto = document.getElementById("btn-nuevo-producto")!;
-const tablaCategorias = document.querySelector("tabla-categorias") as HTMLElement;
-const tablaProductos = document.querySelector("tabla-productos") as HTMLElement;
+const tablaCategorias = document.getElementById("tabla-categorias") as HTMLElement;
+const tablaProductos = document.getElementById("tabla-productos") as HTMLElement;
 
 // ---------------------- NAVEGACIÓN ENTRE SECCIONES ----------------------
 sections.forEach((s) => s.classList.remove("active"));
@@ -78,48 +78,74 @@ menuLinks.forEach((link) => {
 btnNuevaCategoria.addEventListener("click", () => abrirFormulario("categoria"));
 btnNuevoProducto.addEventListener("click", () => abrirFormulario("producto"));
 
-function abrirFormulario(modo: "categoria" | "producto", datos: any = null) {
+// 🔹 Hacemos la función asíncrona para poder usar await
+async function abrirFormulario(modo: "categoria" | "producto", datos: any = null) {
   modoActual = modo;
   idEditando = datos?.id ?? null;
+
+  // Título dinámico del formulario
   formTitle.textContent = datos
     ? `Editar ${modo === "categoria" ? "Categoría" : "Producto"}`
     : `Nuevo ${modo === "categoria" ? "Categoría" : "Producto"}`;
 
-  // Generar formulario dinámico
+  // ---------------------- FORMULARIO PARA CATEGORÍAS ----------------------
   if (modo === "categoria") {
-    formContainer.innerHTML = ` 
-      <label>Nombre</label>
-      <input id="nombre" type="text" value="${datos?.nombre ?? ""}" required>
-      <button type="submit" class="btn-green">${datos ? "Actualizar" : "Guardar"}</button>
-    `;
-  } else {
     formContainer.innerHTML = `
       <label>Nombre</label>
       <input id="nombre" type="text" value="${datos?.nombre ?? ""}" required>
-      <label>Descripción</label>
-      <textarea id="descripcion" >${datos?.descripcion ?? ""}</textarea>
-      <label>Precio</label>
-      <input id="precio" type="number" step="0.01" min="0" value="${datos?.precio ?? ""}" required>
-      <label>Stock</label>
-      <input id="stock" type="number" min="0" value="${datos?.stock ?? ""}" >
-      <label>Categoría</label>
-      <select id="categoria" required>
-        <option value="">Seleccionar</option>
-        <option value="Hamburguesas" ${datos?.categoria === "Hamburguesas" ? "selected" : ""}>Hamburguesas</option>
-        <option value="Pizzas" ${datos?.categoria === "Pizzas" ? "selected" : ""}>Pizzas</option>
-        <option value="Bebidas" ${datos?.categoria === "Bebidas" ? "selected" : ""}>Bebidas</option>
-      </select>
-      <label>URL de la Imagen</label>
-      <input id="imagen" type="url" value="${datos?.imagen ?? ""}" >
-      <label class="checkbox-label">
-        <input id="disponible" type="checkbox" ${datos?.disponible ? "checked" : ""}> Disponible
-      </label>
-      <button type="submit" class="btn-green">${datos ? "Actualizar" : "Guardar"}</button>
+      <button type="submit" class="btn-green">
+        ${datos ? "Actualizar" : "Guardar"}
+      </button>
     `;
   }
 
+  // ---------------------- FORMULARIO PARA PRODUCTOS ----------------------
+  else {
+    try {
+      // 🔹 Traemos las categorías activas desde el backend
+      const categorias = await obtenerCategorias();
+      const categoriasActivas = categorias.filter((c: any) => !c.eliminado);
+
+      // 🔹 Generamos dinámicamente las opciones del select
+      const opcionesCategorias = categoriasActivas
+        .map(
+          (c: any) => `
+            <option value="${c.id}" ${datos?.categoria?.id === c.id ? "selected" : ""}>
+              ${c.nombre}
+            </option>`
+        )
+        .join("");
+
+      // 🔹 Generamos el formulario dinámico completo
+      formContainer.innerHTML = `
+        <label>Nombre</label>
+        <input id="nombre" type="text" value="${datos?.nombre ?? ""}" required>
+
+        <label>Precio</label>
+        <input id="precio" type="number" step="0.01" min="0" value="${datos?.precio ?? ""}" required>
+
+        <label>Categoría</label>
+        <select id="categoria" required>
+          <option value="">Seleccionar</option>
+          ${opcionesCategorias}
+        </select>
+
+        <button type="submit" class="btn-green">
+          ${datos ? "Actualizar" : "Guardar"}
+        </button>
+      `;
+    } catch (error) {
+      console.error("Error al cargar las categorías:", error);
+      formContainer.innerHTML = `
+        <p style="color:red;">Error al cargar categorías. Intente nuevamente.</p>
+      `;
+    }
+  }
+
+  // Mostrar el modal
   modal.classList.remove("hidden");
 }
+
 
 // ---------------------- CERRAR MODAL ----------------------
 closeModal.addEventListener("click", () => {
@@ -147,7 +173,7 @@ formContainer.addEventListener("submit", async (e) => {
           //descripcion: (document.getElementById("descripcion") as HTMLTextAreaElement).value.trim(),
           precio: parseFloat((document.getElementById("precio") as HTMLInputElement).value),
           //stock: parseInt((document.getElementById("stock") as HTMLInputElement).value),
-          categoria: (document.getElementById("categoria") as HTMLSelectElement).value,
+          categoriaId: parseInt((document.getElementById("categoria") as HTMLSelectElement).value),
           //imagen: (document.getElementById("imagen") as HTMLInputElement).value.trim(),
           //disponible: (document.getElementById("disponible") as HTMLInputElement)?.checked ?? false,
           eliminado: false,
