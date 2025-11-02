@@ -32,8 +32,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (userNameSpan) userNameSpan.textContent = user;
 });
 
-
-
 // ---------------------- VARIABLES GLOBALES ----------------------
 let modoActual: "categoria" | "producto" | null = null;
 let idEditando: number | null = null;
@@ -78,7 +76,6 @@ menuLinks.forEach((link) => {
 btnNuevaCategoria.addEventListener("click", () => abrirFormulario("categoria"));
 btnNuevoProducto.addEventListener("click", () => abrirFormulario("producto"));
 
-// 🔹 Hacemos la función asíncrona para poder usar await
 async function abrirFormulario(modo: "categoria" | "producto", datos: any = null) {
   modoActual = modo;
   idEditando = datos?.id ?? null;
@@ -93,6 +90,13 @@ async function abrirFormulario(modo: "categoria" | "producto", datos: any = null
     formContainer.innerHTML = `
       <label>Nombre</label>
       <input id="nombre" type="text" value="${datos?.nombre ?? ""}" required>
+
+      <label>Descripción</label>
+      <textarea id="descripcion" rows="3">${datos?.descripcion ?? ""}</textarea>
+
+      <label>Imagen (URL)</label>
+      <input id="imagen" type="text" value="${datos?.imagen ?? ""}">
+
       <button type="submit" class="btn-green">
         ${datos ? "Actualizar" : "Guardar"}
       </button>
@@ -102,11 +106,9 @@ async function abrirFormulario(modo: "categoria" | "producto", datos: any = null
   // ---------------------- FORMULARIO PARA PRODUCTOS ----------------------
   else {
     try {
-      // 🔹 Traemos las categorías activas desde el backend
       const categorias = await obtenerCategorias();
       const categoriasActivas = categorias.filter((c: any) => !c.eliminado);
 
-      // 🔹 Generamos dinámicamente las opciones del select
       const opcionesCategorias = categoriasActivas
         .map(
           (c: any) => `
@@ -116,13 +118,21 @@ async function abrirFormulario(modo: "categoria" | "producto", datos: any = null
         )
         .join("");
 
-      // 🔹 Generamos el formulario dinámico completo
       formContainer.innerHTML = `
         <label>Nombre</label>
         <input id="nombre" type="text" value="${datos?.nombre ?? ""}" required>
 
+        <label>Descripción</label>
+        <textarea id="descripcion" rows="3">${datos?.descripcion ?? ""}</textarea>
+
         <label>Precio</label>
         <input id="precio" type="number" step="0.01" min="0" value="${datos?.precio ?? ""}" required>
+
+        <label>Stock</label>
+        <input id="stock" type="number" min="0" value="${datos?.stock ?? 0}" required>
+
+        <label>Imagen (URL)</label>
+        <input id="imagen" type="text" value="${datos?.imagen ?? ""}">
 
         <label>Categoría</label>
         <select id="categoria" required>
@@ -130,12 +140,17 @@ async function abrirFormulario(modo: "categoria" | "producto", datos: any = null
           ${opcionesCategorias}
         </select>
 
+        <label class="checkbox-label">
+          <input id="disponible" type="checkbox" ${datos?.disponible ? "checked" : ""}>
+          Producto disponible
+        </label>
+
         <button type="submit" class="btn-green">
           ${datos ? "Actualizar" : "Guardar"}
         </button>
       `;
     } catch (error) {
-      console.error("Error al cargar las categorías:", error);
+      console.error("Error al cargar categorías:", error);
       formContainer.innerHTML = `
         <p style="color:red;">Error al cargar categorías. Intente nuevamente.</p>
       `;
@@ -145,7 +160,6 @@ async function abrirFormulario(modo: "categoria" | "producto", datos: any = null
   // Mostrar el modal
   modal.classList.remove("hidden");
 }
-
 
 // ---------------------- CERRAR MODAL ----------------------
 closeModal.addEventListener("click", () => {
@@ -159,45 +173,36 @@ formContainer.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!modoActual) return;
 
-  // --- Construcción de datos según el modo ---
   const data =
     modoActual === "categoria"
       ? {
           nombre: (document.getElementById("nombre") as HTMLInputElement).value.trim(),
-          //descripcion: (document.getElementById("descripcion") as HTMLTextAreaElement).value.trim(),
-          //imagen: (document.getElementById("imagen") as HTMLInputElement).value.trim(),
+          descripcion: (document.getElementById("descripcion") as HTMLTextAreaElement).value.trim(),
+          imagen: (document.getElementById("imagen") as HTMLInputElement).value.trim(),
           eliminado: false,
         }
       : {
           nombre: (document.getElementById("nombre") as HTMLInputElement).value.trim(),
-          //descripcion: (document.getElementById("descripcion") as HTMLTextAreaElement).value.trim(),
+          descripcion: (document.getElementById("descripcion") as HTMLTextAreaElement).value.trim(),
           precio: parseFloat((document.getElementById("precio") as HTMLInputElement).value),
-          //stock: parseInt((document.getElementById("stock") as HTMLInputElement).value),
+          stock: parseInt((document.getElementById("stock") as HTMLInputElement).value),
+          imagen: (document.getElementById("imagen") as HTMLInputElement).value.trim(),
           categoriaId: parseInt((document.getElementById("categoria") as HTMLSelectElement).value),
-          //imagen: (document.getElementById("imagen") as HTMLInputElement).value.trim(),
-          //disponible: (document.getElementById("disponible") as HTMLInputElement)?.checked ?? false,
+          disponible: (document.getElementById("disponible") as HTMLInputElement).checked,
           eliminado: false,
         };
 
   try {
-    // --- Diferenciar creación vs actualización ---
     if (modoActual === "categoria") {
-      if (idEditando) {
-        await actualizarCategoria(idEditando, data);
-      } else {
-        await crearCategoria(data);
-      }
-      await cargarCategorias(); // refrescar tabla
-    } else if (modoActual === "producto") {
-      if (idEditando) {
-        await actualizarProducto(idEditando, data);
-      } else {
-        await crearProducto(data);
-      }
-      await cargarProductos(); // refrescar tabla
+      if (idEditando) await actualizarCategoria(idEditando, data);
+      else await crearCategoria(data);
+      await cargarCategorias();
+    } else {
+      if (idEditando) await actualizarProducto(idEditando, data);
+      else await crearProducto(data);
+      await cargarProductos();
     }
 
-    // --- Resetear modal y estados ---
     modal.classList.add("hidden");
     idEditando = null;
     modoActual = null;
@@ -207,7 +212,6 @@ formContainer.addEventListener("submit", async (e) => {
     alert(error.message || "Ocurrió un error al guardar los datos.");
   }
 });
-
 
 // ---------------------- FUNCIONES DE CARGA ----------------------
 async function cargarCategorias() {
@@ -232,8 +236,8 @@ async function cargarCategorias() {
           <td>${c.nombre ?? "Sin nombre"}</td>
           <td>${c.descripcion ?? "Sin descripción"}</td>
           <td>
-            <button class="editar" data-id="${c.id}">✏️</button>
-            <button class="eliminar" data-id="${c.id}">🗑️</button>
+            <button class="editar btn-edit" data-id="${c.id}">✏️</button>
+            <button class="eliminar btn-delete" data-id="${c.id}">🗑️</button>
           </td>
         `;
         tablaCategorias.appendChild(tr);
@@ -258,25 +262,24 @@ async function cargarProductos() {
       .filter((p: any) => !p.eliminado)
       .forEach((p: any) => {
         const tr = document.createElement("tr");
-
         tr.innerHTML = `
           <td>${p.id ?? "-"}</td>
           <td>
             <img 
-              src="${p.imagen ?? 'https://via.placeholder.com/60'}" 
-              alt="${p.nombre ?? 'Sin nombre'}" 
+              src="${p.imagen || 'https://via.placeholder.com/60'}" 
+              alt="${p.nombre || 'Sin nombre'}" 
               width="60"
             >
           </td>
-          <td>${p.nombre ?? "Sin nombre"}</td>
-          <td>${p.descripcion ?? "Sin descripción"}</td>
+          <td>${p.nombre || "Sin nombre"}</td>
+          <td>${p.descripcion || "Sin descripción"}</td>
           <td>${p.precio ? `$${p.precio.toFixed(2)}` : "$0.00"}</td>
           <td>${p.stock ?? 0}</td>
-          <td>${p.categoria?.nombre ?? "Sin categoría"}</td>
+          <td>${p.categoria?.nombre || "Sin categoría"}</td>
           <td>${p.disponible ? "✅" : "❌"}</td>
           <td>
-            <button class="editar" data-id="${p.id}">✏️</button>
-            <button class="eliminar" data-id="${p.id}">🗑️</button>
+            <button class="editar btn-edit" data-id="${p.id}">✏️</button>
+            <button class="eliminar btn-delete" data-id="${p.id}">🗑️</button>
           </td>
         `;
         tablaProductos.appendChild(tr);
@@ -290,6 +293,7 @@ async function cargarProductos() {
     `;
   }
 }
+
 // ---------------------- EVENTOS ----------------------
 function agregarEventosCategorias() {
   document.querySelectorAll("#tabla-categorias .editar").forEach((btn) => {
@@ -330,4 +334,3 @@ function agregarEventosProductos() {
     });
   });
 }
-
