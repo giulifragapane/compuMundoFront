@@ -261,15 +261,20 @@ async function cargarProductos() {
       obtenerCategorias()
     ]);
     
+      // 🔹 Mapa de categorías (id → nombre)
     const categoriasMap = new Map(
-      categorias.map((c: any) => [c.id, c.nombre])
+      categorias.filter((c: any) => !c.eliminado)
+                .map((c: any) => [c.id, c.nombre])
     );
 
     productos
       .filter((p: any) => !p.eliminado)
       .forEach((p: any) => {
         const tr = document.createElement("tr");
-        const categoriaNombre = categoriasMap.get(p.categoria?.id || p.categoria) || "Sin categoría";
+        // 🔹 Si el backend devuelve p.categoriaId o p.categoria, se cubren ambos casos
+        const categoriaId = p.categoria?.id || p.categoriaId || p.categoria;
+        const categoriaNombre = categoriasMap.get(categoriaId) || "Sin categoría";
+
         tr.innerHTML = `
           <td>${p.id ?? "-"}</td>
           <td>
