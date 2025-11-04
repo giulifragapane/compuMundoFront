@@ -1,0 +1,243 @@
+/* =========================
+   Paleta y estilos base
+   ========================= */
+:root {
+  --primary: #ff6b35;
+  --secondary: #f7931e;
+  --success: #00b894;
+  --danger: #d63031;
+  --dark: #2d3436;
+  --light: #f5f6fa;
+  --muted: #dfe6e9;
+  --radius: 12px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Arial, sans-serif;
+  background: var(--light);
+  color: var(--dark);
+  line-height: 1.5;
+}
+
+/* =========================
+   HEADER igual al admin
+   ========================= */
+.topbar {
+  background: #fff;
+  border-bottom: 1px solid var(--muted);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.topbar-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.brand-name {
+  font-weight: 700;
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 18px;
+}
+
+.mainnav {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.mainnav a {
+  color: #444;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.mainnav a:hover {
+  color: var(--primary);
+}
+
+.logout-btn {
+  background: #e5ecef;
+  color: #213038;
+  border: 0;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.cart-link {
+  position: relative;
+  padding-right: 18px;
+}
+
+.cart-icon {
+  opacity: 0.9;
+}
+
+.cart-badge {
+  position: absolute;
+  right: 0;
+  top: -8px;
+  background: #e11;
+  color: #fff;
+  border-radius: 999px;
+  font-size: 10px;
+  padding: 0 6px;
+  line-height: 16px;
+  height: 16px;
+  min-width: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =========================
+   CONTENIDO DEL DETALLE
+   ========================= */
+.wrap {
+  max-width: 1200px;
+  margin: 30px auto;
+  padding: 0 16px;
+}
+
+.detail {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  align-items: start;
+  gap: 26px;
+}
+
+/* Imagen grande */
+.media {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.media img {
+  width: 100%;
+  height: 440px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Información del producto */
+.info h1 {
+  font-size: 26px;
+  margin-bottom: 8px;
+}
+
+.price.big {
+  color: var(--danger);
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.badge {
+  display: inline-block;
+  background: var(--success);
+  color: #fff;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 13px;
+}
+
+.muted {
+  color: #555;
+  opacity: 0.8;
+  margin-top: 8px;
+  margin-bottom: 18px;
+}
+
+/* =========================
+   CANTIDAD Y BOTONES
+   ========================= */
+.qty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.qty-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--muted);
+  background: #fff;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.qty input {
+  width: 60px;
+  text-align: center;
+  border: 1px solid var(--muted);
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 15px;
+}
+
+/* =========================
+   BOTONES DE ACCIÓN
+   ========================= */
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn {
+  border-radius: 10px;
+  padding: 12px 16px;
+  border: 0;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.btn.primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.btn.ghost {
+  background: #e5ecef;
+  color: #213038;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* =========================
+   Responsive
+   ========================= */
+@media (max-width: 900px) {
+  .detail {
+    grid-template-columns: 1fr;
+  }
+  .media img {
+    height: 320px;
+  }
+}

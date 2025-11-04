@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Food Store - Carrito</title>
+  <link rel="stylesheet" href="./cart.css"/>
+</head>
+<body>
+  <!-- Header igual al resto -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-icon">🍕</span>
+       <a class="brand-name" href="../storeHome/storeHome.html">Food Store</a>
+      </div>
+      <nav class="mainnav">
+        <a href="storeHome/storeHome.html">Inicio</a>
+        <a href="#">Mis Pedidos</a>
+        <a href="#">Administración</a>
+        <a class="cart-link" href="../cart/cart.html">
+          <span class="cart-icon">🛒</span>
+          Carrito
+          <span id="cartBadge" class="cart-badge">0</span>
+        </a>
+        <span id="user-name" class="user-name"></span>
+        <button id="btn-logout" class="logout-btn">Cerrar Sesión</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h2>Mi Carrito</h2>
+
+    <section class="cart-layout">
+      <!-- Lista de ítems -->
+      <div id="items"></div>
+
+      <!-- Resumen -->
+      <aside class="card summary">
+        <h3>Resumen del Pedido</h3>
+        <div class="hr"></div>
+        <div class="row"><span>Subtotal:</span><strong id="subtotal">$0</strong></div>
+        <div class="row"><span>Envío:</span><strong id="shipping">$0</strong></div>
+        <div class="hr"></div>
+        <div class="row total"><strong>Total:</strong><strong id="total">$0</strong></div>
+        <div class="actions">
+          <button id="checkout" class="btn primary">Proceder al Pago</button>
+          <button id="clear" class="btn danger">Vaciar Carrito</button>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script type="module" src="./cart.ts"></script>
+</body>
+</html>

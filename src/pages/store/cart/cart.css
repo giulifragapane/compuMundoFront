@@ -1,0 +1,185 @@
+/* =========================
+   Paleta y básicos globales
+   ========================= */
+:root {
+  --primary: #ff6b35;
+  --secondary: #f7931e;
+  --success: #00b894;
+  --danger: #d63031;
+  --dark: #2d3436;
+  --light: #f5f6fa;
+  --muted: #dfe6e9;
+  --radius: 12px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Arial, sans-serif;
+  color: var(--dark);
+  background: var(--light);
+}
+
+/* =========================
+   Header igual que admin
+   ========================= */
+.topbar {
+  background: #fff;
+  border-bottom: 1px solid var(--muted);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .05);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.topbar-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.brand-name {
+  font-weight: 700;
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 18px;
+}
+.mainnav {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.mainnav a {
+  color: #444;
+  text-decoration: none;
+  font-size: 14px;
+}
+.mainnav a:hover { color: var(--primary); }
+.logout-btn {
+  background: #e5ecef;
+  color: #213038;
+  border: 0;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+.cart-link { position: relative; padding-right: 18px; }
+.cart-icon { opacity: .9; }
+.cart-badge {
+  position: absolute;
+  right: 0; top: -8px;
+  background: #e11;
+  color: #fff;
+  border-radius: 999px;
+  font-size: 10px;
+  padding: 0 6px;
+  line-height: 16px;
+  height: 16px;
+  min-width: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =========================
+   Layout del carrito
+   ========================= */
+.wrap { max-width: 1200px; margin: 24px auto; padding: 0 16px; }
+.cart-layout { display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
+h2 { margin-bottom: 20px; }
+
+/* =========================
+   Tarjetas de items
+   ========================= */
+.item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid var(--muted);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .05);
+}
+.item img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.item .grow { flex: 1; }
+.item .price {
+  min-width: 120px;
+  text-align: right;
+  font-weight: 700;
+  color: #e05540;
+}
+.item .qty {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.item .qty button {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--muted);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+.item .remove {
+  border: 1px solid var(--muted);
+  background: #fff;
+  border-radius: 8px;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+/* =========================
+   Panel resumen
+   ========================= */
+.summary {
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, .06);
+  padding: 16px;
+}
+.hr {
+  height: 1px;
+  background: var(--muted);
+  margin: 8px 0;
+}
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 6px 0;
+}
+.total { font-size: 18px; }
+.actions {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.btn {
+  border-radius: 10px;
+  padding: 12px;
+  border: 0;
+  cursor: pointer;
+}
+.btn.primary {
+  background: var(--primary);
+  color: #fff;
+}
+.btn.danger {
+  background: #C62828;
+  color: #fff;
+}

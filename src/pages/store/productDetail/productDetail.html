@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Food Store - Detalle</title>
+  <link rel="stylesheet" href="./productDetail.css"/>
+</head>
+<body>
+  <!-- Header igual al Home -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-icon">🍕</span>
+        <a class="brand-name" href="../storeHome/storeHome.html">Food Store</a>
+      </div>
+      <nav class="mainnav">
+        <a href="storeHome/storeHome.html">Inicio</a>
+        <a href="#">Mis Pedidos</a>
+        <a href="#">Administración</a>
+        <a class="cart-link" href="../cart/cart.html">
+          <span class="cart-icon">🛒</span>
+          Carrito
+          <span id="cartBadge" class="cart-badge">0</span>
+        </a>
+        <span id="user-name" class="user-name"></span>
+        <button id="btn-logout" class="logout-btn">Cerrar Sesión</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="detail">
+      <!-- Imagen grande -->
+      <figure class="media card"><img id="img" alt="producto"/></figure>
+
+      <!-- Info -->
+      <article class="info">
+        <h1 id="name"></h1>
+        <div id="price" class="price big"></div>
+        <div style="margin:8px 0"><span id="stockBadge" class="badge">Disponible</span></div>
+
+        <p id="desc" class="muted"></p>
+
+        <!-- Cantidad -->
+        <div class="qty">
+          <button id="minus" class="qty-btn">-</button>
+          <input id="qty" type="number" min="1" value="1" />
+          <button id="plus" class="qty-btn">+</button>
+        </div>
+
+        <!-- Acciones -->
+        <div class="actions">
+          <button id="addCart" class="btn primary">🛒 Agregar al Carrito</button>
+          <a class="btn ghost" href="../storeHome/storeHome.html">← Volver</a>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script type="module" src="./productDetail.ts"></script>
+</body>
+</html>

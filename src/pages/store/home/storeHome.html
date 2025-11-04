@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Food Store - Home</title>
+  <link rel="stylesheet" href="./storeHome.css" />
+</head>
+<body>
+  <!-- ====== HEADER ====== -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-icon">🍕</span>
+        <a class="brand-name" href="./storeHome.html">Food Store</a>
+      </div>
+      <nav class="mainnav">
+        <a href="./storeHome.html"a>Inicio</a>
+        <a href="#">Mis Pedidos</a>
+        <a href="#">Administración</a>
+        <a class="cart-link" href="../cart/cart.html">
+          <span class="cart-icon">🛒</span>
+          Carrito
+          <span id="cartBadge" class="cart-badge">0</span>
+        </a>
+        <span id="user-name" class="user-name"></span>
+        <button id="btn-logout" class="logout-btn">Cerrar Sesión</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ====== CONTENIDO ====== -->
+  <main class="wrap">
+    <div class="layout">
+      <!-- Sidebar de categorías -->
+      <aside class="sidebar card">
+        <div class="cat-head">
+          <h3>Categorías</h3>
+          <small>Filtra por categoría</small>
+        </div>
+        <nav id="categoryList" class="cat-list">
+          <!-- Se llena por TS -->
+        </nav>
+      </aside>
+
+      <!-- Columna principal -->
+      <section class="content">
+        <!-- Barra de búsqueda y filtros -->
+        <div class="toolbar card">
+          <div class="search">
+            <span class="search-icon">🔎</span>
+            <input id="searchInput" placeholder="Buscar productos..." />
+          </div>
+          <select id="orderBy" class="select">
+            <option value="name">Ordenar por</option>
+            <option value="priceAsc">Precio (menor a mayor)</option>
+            <option value="priceDesc">Precio (mayor a menor)</option>
+          </select>
+          <select id="availability" class="select">
+            <option value="all">Todos</option>
+            <option value="available">Disponibles</option>
+            <option value="unavailable">No disponibles</option>
+          </select>
+        </div>
+
+        <h2>Todos los Productos</h2>
+
+        <!-- Cards de productos -->
+        <div id="productsGrid" class="grid products"></div>
+
+        <!-- Contador -->
+        <p id="productsCounter" class="muted right"></p>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="./storeHome.ts"></script>
+</body>
+</html>

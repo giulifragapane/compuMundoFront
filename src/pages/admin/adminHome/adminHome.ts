@@ -16,22 +16,42 @@ import {
   eliminarProducto,
 } from "../products/products.ts";
 
-// ---------------------- LOGOUT Y USUARIO ----------------------
+// ---------------------- BOTÓN DE CERRAR SESIÓN ----------------------
 const logoutButton = document.getElementById("btn-logout");
-logoutButton?.addEventListener("click", () => {
-  logout();
-  window.location.href = "/src/pages/auth/login/login.html";
-});
+if (logoutButton) {
+  logoutButton.addEventListener("click", () => {
+    // Elimina datos de sesión
+    logout();
 
-document.addEventListener("DOMContentLoaded", () => {
-  cargarCategorias();
-  cargarProductos();
+    // Limpieza manual por si tu función logout() no borra todo
+    localStorage.removeItem("username");
+    localStorage.removeItem("role");
+    localStorage.removeItem("token");
 
-  const user = localStorage.getItem("username") || "Administrador";
-  const userNameSpan = document.getElementById("user-name");
-  if (userNameSpan) userNameSpan.textContent = user;
-});
+    // Redirigir al login
+    window.location.href = "/src/pages/auth/login/login.html";
+  });
+} else {
+  console.warn("⚠️ No se encontró el botón de Cerrar Sesión (#btn-logout).");
+}
 
+// ---------------------- MOSTRAR NOMBRE EN HEADER ----------------------
+const userNameSpan = document.getElementById("user-name");
+const storedUser = localStorage.getItem("username");
+const storedRole = localStorage.getItem("role");
+
+if (userNameSpan) {
+  if (storedUser) {
+    userNameSpan.textContent = storedUser;
+  } else {
+    // Si no hay nombre, mostramos uno genérico según rol
+    if (storedRole?.toUpperCase() === "ADMIN") {
+      userNameSpan.textContent = "Administrador";
+    } else {
+      userNameSpan.textContent = "Usuario";
+    }
+  }
+}
 // ---------------------- VARIABLES GLOBALES ----------------------
 let modoActual: "categoria" | "producto" | null = null;
 let idEditando: number | null = null;
