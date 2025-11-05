@@ -1,18 +1,14 @@
 import { logout } from "../../../utils/auth";
+import { api } from "../../../utils/api";
 
 // ---------------------- BOTÓN DE CERRAR SESIÓN ----------------------
 const logoutButton = document.getElementById("btn-logout");
 if (logoutButton) {
   logoutButton.addEventListener("click", () => {
-    // Elimina datos de sesión
     logout();
-
-    // Limpieza manual por si tu función logout() no borra todo
     localStorage.removeItem("username");
     localStorage.removeItem("role");
     localStorage.removeItem("token");
-
-    // Redirigir al login
     window.location.href = "/src/pages/auth/login/login.html";
   });
 } else {
@@ -28,7 +24,6 @@ if (userNameSpan) {
   if (storedUser) {
     userNameSpan.textContent = storedUser;
   } else {
-    // Si no hay nombre, mostramos uno genérico según rol
     if (storedRole?.toUpperCase() === "ADMIN") {
       userNameSpan.textContent = "Administrador";
     } else {
@@ -36,17 +31,22 @@ if (userNameSpan) {
     }
   }
 }
-const $ = (s:string)=>document.querySelector(s) as HTMLElement;
-const money = (v:number)=>`$${v.toLocaleString("es-AR",{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+
+// ---------------------- UTILIDADES ----------------------
+const $ = (s: string) => document.querySelector(s) as HTMLElement;
+const money = (v: number) =>
+  `$${v.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const SHIPPING = 500;
 
-function updateCartBadge(){
+// ---------------------- ACTUALIZAR CANTIDAD EN ICONO ----------------------
+function updateCartBadge() {
   const b = $("#cartBadge");
   const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-  if(b) b.textContent = String(cart.reduce((n:number,i:any)=>n+(i.qty||0),0));
+  if (b) b.textContent = String(cart.reduce((n: number, i: any) => n + (i.qty || 0), 0));
 }
 
-function render(){
+// ---------------------- RENDERIZAR CARRITO ----------------------
+function render() {
   const itemsEl = $("#items");
   const subtotalEl = $("#subtotal");
   const totalEl = $("#total");
@@ -56,7 +56,7 @@ function render(){
   let subtotal = 0;
   itemsEl.innerHTML = "";
 
-  cart.forEach((i:any, idx:number)=>{
+  cart.forEach((i: any, idx: number) => {
     subtotal += i.price * i.qty;
 
     const row = document.createElement("div");
@@ -82,44 +82,114 @@ function render(){
   shippingEl.textContent = money(cart.length ? SHIPPING : 0);
   totalEl.textContent = money(subtotal + (cart.length ? SHIPPING : 0));
 
-  // Eventos de cada fila
-  itemsEl.querySelectorAll<HTMLButtonElement>(".plus").forEach(btn=>{
-    btn.addEventListener("click", (e:any)=>{
+  // Eventos de botones
+  itemsEl.querySelectorAll<HTMLButtonElement>(".plus").forEach((btn) => {
+    btn.addEventListener("click", (e: any) => {
       const idx = parseInt(e.currentTarget.dataset.idx);
       const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-      cart[idx].qty++; localStorage.setItem("cart", JSON.stringify(cart));
-      render(); updateCartBadge();
+      cart[idx].qty++;
+      localStorage.setItem("cart", JSON.stringify(cart));
+      render();
+      updateCartBadge();
     });
   });
-  itemsEl.querySelectorAll<HTMLButtonElement>(".minus").forEach(btn=>{
-    btn.addEventListener("click", (e:any)=>{
+
+  itemsEl.querySelectorAll<HTMLButtonElement>(".minus").forEach((btn) => {
+    btn.addEventListener("click", (e: any) => {
       const idx = parseInt(e.currentTarget.dataset.idx);
       const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-      cart[idx].qty = Math.max(1, cart[idx].qty-1);
+      cart[idx].qty = Math.max(1, cart[idx].qty - 1);
       localStorage.setItem("cart", JSON.stringify(cart));
-      render(); updateCartBadge();
+      render();
+      updateCartBadge();
     });
   });
-  itemsEl.querySelectorAll<HTMLButtonElement>(".remove").forEach(btn=>{
-    btn.addEventListener("click", (e:any)=>{
+
+  itemsEl.querySelectorAll<HTMLButtonElement>(".remove").forEach((btn) => {
+    btn.addEventListener("click", (e: any) => {
       const idx = parseInt(e.currentTarget.dataset.idx);
       const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-      cart.splice(idx,1);
+      cart.splice(idx, 1);
       localStorage.setItem("cart", JSON.stringify(cart));
-      render(); updateCartBadge();
+      render();
+      updateCartBadge();
     });
   });
 }
 
-// Botones del resumen
-($("#checkout") as HTMLButtonElement).onclick = ()=>{
-  alert("Simulación de pago: aquí llamarías al endpoint para crear el pedido.");
-};
-($("#clear") as HTMLButtonElement).onclick = ()=>{
+// ---------------------- ANIMACIÓN DE CONFIRMACIÓN ----------------------
+function showConfirmationAnimation() {
+  const overlay = document.createElement("div");
+  overlay.classList.add("confirm-overlay");
+  overlay.innerHTML = `
+    <div class="confirm-box">
+      <div class="checkmark"><span class="check"></span></div>
+      <h2>¡Compra confirmada!</h2>
+      <p>Gracias por tu pedido 🍔</p>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  // 🔊 Reproducir sonido justo cuando aparece el check
+  setTimeout(() => {
+    const audio = new Audio("/sounds/confirm.mp3");
+    audio.volume = 0.5;
+    audio.play().catch((err) => console.warn("Audio bloqueado:", err));
+  }, 400); // sonido 0.4s después para coincidir con la animación
+
+  // 🔄 Ocultar la animación después de 3 segundos
+  setTimeout(() => {
+    overlay.classList.add("hide");
+    setTimeout(() => {
+      localStorage.removeItem("cart");
+      window.location.href = "../home/storeHome.html";
+    }, 1000);
+  }, 3000);
+}
+
+// ---------------------- ENVIAR PEDIDO AL BACKEND ----------------------
+async function enviarPedidoAlBackend() {
+  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+  const username = localStorage.getItem("username") || "Usuario";
+  const token = localStorage.getItem("token");
+
+  if (!cart.length) {
+    alert("Tu carrito está vacío.");
+    return;
+  }
+
+  try {
+    const pedido = {
+      usuario: username,
+      items: cart.map((item: any) => ({
+        idProducto: item.id,
+        cantidad: item.qty,
+      })),
+    };
+
+    // 🟥 TEMPORALMENTE COMENTADO: descomentar cuando conectes con backend real
+    /*
+    const response = await api.post("/pedidos/confirmar", pedido);
+    console.log("Pedido confirmado:", response);
+    */
+
+    // 🎉 Mostrar la animación instantáneamente (sin esperar backend)
+    showConfirmationAnimation();
+
+  } catch (err: any) {
+    console.error("Error al confirmar pedido:", err);
+    alert("Error al confirmar tu compra. Intenta nuevamente.");
+  }
+}
+
+// ---------------------- BOTONES DEL RESUMEN ----------------------
+($("#checkout") as HTMLButtonElement).onclick = enviarPedidoAlBackend;
+($("#clear") as HTMLButtonElement).onclick = () => {
   localStorage.removeItem("cart");
-  render(); updateCartBadge();
+  render();
+  updateCartBadge();
 };
 
-// Boot
+// ---------------------- INICIALIZACIÓN ----------------------
 render();
 updateCartBadge();
