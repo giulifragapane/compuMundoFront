@@ -134,21 +134,6 @@ function showConfirmationAnimation() {
 
   document.body.appendChild(overlay);
 
-  // 🔊 Reproduce sonido con manejo de errores
-setTimeout(() => {
-  const audio = new Audio("/assets/sounds/confirm.mp3");
-  audio.volume = 0.5;
-  audio.addEventListener("canplaythrough", () => {
-    audio.play()
-      .then(() => console.log("🔊 Audio reproducido correctamente"))
-      .catch(err => console.error("⚠️ Error al reproducir:", err));
-  });
-  audio.addEventListener("error", (e) => {
-    console.error("❌ Error cargando el audio:", e);
-  });
-}, 250);
-
-
   // ⏳ Mostrar animación y luego cerrar
   setTimeout(() => {
     overlay.classList.add("hide");
@@ -159,7 +144,6 @@ setTimeout(() => {
     }, 600);
   }, 2800);
 }
-
 
 // ---------------------- ENVIAR PEDIDO AL BACKEND ----------------------
 async function enviarPedidoAlBackend() {
@@ -173,6 +157,16 @@ async function enviarPedidoAlBackend() {
   }
 
   try {
+    // 🔊 Reproducir sonido inmediatamente (evita bloqueo)
+    const audio = new Audio("/sounds/confirm.mp3");
+    audio.volume = 0.5;
+    audio.play().catch(err => console.warn("⚠️ Audio bloqueado:", err));
+
+    // 🎬 Mostrar animación al mismo tiempo
+    showConfirmationAnimation();
+
+    // 🟥 Descomentar cuando esté conectado al backend
+    /*
     const pedido = {
       usuario: username,
       items: cart.map((item: any) => ({
@@ -181,14 +175,11 @@ async function enviarPedidoAlBackend() {
       })),
     };
 
-    // 🟥 TEMPORALMENTE COMENTADO: descomentar cuando conectes con backend real
-    /*
-    const response = await api.post("/pedidos/confirmar", pedido);
-    console.log("Pedido confirmado:", response);
+    const response = await api.post("/pedidos/confirmar", pedido, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    console.log("✅ Pedido confirmado:", response);
     */
-
-    // 🎉 Mostrar la animación instantáneamente (sin esperar backend)
-    showConfirmationAnimation();
 
   } catch (err: any) {
     console.error("Error al confirmar pedido:", err);
