@@ -117,35 +117,49 @@ function render() {
   });
 }
 
-// ---------------------- ANIMACIÓN DE CONFIRMACIÓN ----------------------
+// ------------------- ANIMACIÓN DE CONFIRMACIÓN -------------------
 function showConfirmationAnimation() {
   const overlay = document.createElement("div");
   overlay.classList.add("confirm-overlay");
+
   overlay.innerHTML = `
     <div class="confirm-box">
-      <div class="checkmark"><span class="check"></span></div>
+      <div class="checkmark">
+        <span class="check"></span>
+      </div>
       <h2>¡Compra confirmada!</h2>
       <p>Gracias por tu pedido 🍔</p>
     </div>
   `;
+
   document.body.appendChild(overlay);
 
-  // 🔊 Reproducir sonido justo cuando aparece el check
-  setTimeout(() => {
-    const audio = new Audio("/sounds/confirm.mp3");
-    audio.volume = 0.5;
-    audio.play().catch((err) => console.warn("Audio bloqueado:", err));
-  }, 400); // sonido 0.4s después para coincidir con la animación
+  // 🔊 Reproduce sonido con manejo de errores
+setTimeout(() => {
+  const audio = new Audio("/assets/sounds/confirm.mp3");
+  audio.volume = 0.5;
+  audio.addEventListener("canplaythrough", () => {
+    audio.play()
+      .then(() => console.log("🔊 Audio reproducido correctamente"))
+      .catch(err => console.error("⚠️ Error al reproducir:", err));
+  });
+  audio.addEventListener("error", (e) => {
+    console.error("❌ Error cargando el audio:", e);
+  });
+}, 250);
 
-  // 🔄 Ocultar la animación después de 3 segundos
+
+  // ⏳ Mostrar animación y luego cerrar
   setTimeout(() => {
     overlay.classList.add("hide");
     setTimeout(() => {
       localStorage.removeItem("cart");
-      window.location.href = "../home/storeHome.html";
-    }, 1000);
-  }, 3000);
+      overlay.remove();
+      window.location.href = "/src/pages/store/home/storeHome.html";
+    }, 600);
+  }, 2800);
 }
+
 
 // ---------------------- ENVIAR PEDIDO AL BACKEND ----------------------
 async function enviarPedidoAlBackend() {
