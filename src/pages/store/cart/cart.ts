@@ -136,7 +136,7 @@ function showConfirmationAnimation() {
 
   // ⏳ Mostrar animación y luego cerrar
   setTimeout(() => {
-    overlay.classList.add("hide");
+    overlay.classList.add("hide"); 
     setTimeout(() => {
       localStorage.removeItem("cart");
       overlay.remove();
