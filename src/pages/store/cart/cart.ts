@@ -147,7 +147,7 @@ function inicializarCarrito() {
     }, 2800);
   }
 
-  // ---------------------- ENVIAR PEDIDO AL BACKEND ----------------------
+  // ---------------------- ENVIAR PEDIDO Y DETALLES ----------------------
   async function enviarPedidoAlBackend() {
     const cart = JSON.parse(localStorage.getItem("cart") || "[]");
     const usuarioId = getUserId();
@@ -173,16 +173,14 @@ function inicializarCarrito() {
 
       const total = items.reduce((acc, i) => acc + i.subtotal, 0) + SHIPPING;
 
-      const pedido: Omit<IOrder, "id" | "fecha"> = {
+      const pedido = {
         usuarioId,
         total,
         estado: "PENDIENTE",
-        items,
       };
 
-      console.log("📦 Pedido enviado:", pedido);
-
-      const response = await fetch(`${API_BASE_URL}/pedidos`, {
+      // 1️⃣ Crear pedido
+      const pedidoResponse = await fetch(`${API_BASE_URL}/pedidos`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -191,16 +189,38 @@ function inicializarCarrito() {
         body: JSON.stringify(pedido),
       });
 
-      if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
+      if (!pedidoResponse.ok) throw new Error("Error al crear el pedido");
+      const pedidoResult = await pedidoResponse.json();
 
-      const result = await response.json();
-      console.log("✅ Pedido confirmado:", result);
+      // 2️⃣ Crear detalles vinculados
+      for (const item of items) {
+        const detalle = {
+          cantidad: item.cantidad,
+          subtotal: item.subtotal,
+          producto_id: item.productoId,
+          pedido_id: pedidoResult.id,
+        };
 
+        const detalleRes = await fetch(`${API_BASE_URL}/detalles`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify(detalle),
+        });
+
+        if (!detalleRes.ok) console.warn("❌ Error al crear detalle:", detalle);
+      }
+
+      console.log("✅ Pedido y detalles creados correctamente");
       showConfirmationAnimation();
+
       setTimeout(() => {
         localStorage.removeItem("cart");
         window.location.href = "/src/pages/client/orders/orders.html";
       }, 3000);
+
     } catch (err: any) {
       console.error("Error al confirmar pedido:", err);
       alert("Error al confirmar tu compra. Intenta nuevamente.");
