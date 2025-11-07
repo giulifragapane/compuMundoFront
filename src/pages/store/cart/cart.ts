@@ -140,15 +140,16 @@ function inicializarCarrito() {
     `;
     document.body.appendChild(overlay);
 
+  // ⏳ Mostrar animación y luego cerrar
+  setTimeout(() => {
+    overlay.classList.add("hide"); 
     setTimeout(() => {
-      overlay.classList.add("hide");
-      setTimeout(() => {
-        localStorage.removeItem("cart");
-        overlay.remove();
-        window.location.href = "/src/pages/store/home/storeHome.html";
-      }, 600);
-    }, 2800);
-  }
+      localStorage.removeItem("cart");
+      overlay.remove();
+      window.location.href = "/src/pages/store/home/storeHome.html";
+    }, 600);
+  }, 2800);
+}
 
   // ---------------------- ENVIAR PEDIDO AL BACKEND ----------------------
   async function enviarPedidoAlBackend() {
