@@ -1,5 +1,5 @@
 import { routeGuard } from "../../../utils/routeGuard";
-import { logout } from "../../../utils/auth";
+import { logout, getUserId, getToken } from "../../../utils/auth";
 import { PATHS } from "../../../utils/navigate";
 import type { IOrder, IOrderItem } from "../../../types/IOrders";
 
@@ -148,81 +148,64 @@ function inicializarCarrito() {
   }
 
   // ---------------------- ENVIAR PEDIDO AL BACKEND ----------------------
-async function enviarPedidoAlBackend() {
-  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-  const usuarioId = parseInt(localStorage.getItem("userId") || "0", 10);
-  const token = localStorage.getItem("token");
-  const API_BASE_URL = import.meta.env.VITE_API_URL; // misma constante que en api.ts
+  async function enviarPedidoAlBackend() {
+    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+    const usuarioId = getUserId();
+    const token = getToken();
+    const API_BASE_URL = import.meta.env.VITE_API_URL;
 
-  if (!cart.length) {
-    alert("Tu carrito está vacío.");
-    return;
-  }
-
-  // 🎵 Reproducir sonido de confirmación inmediatamente tras el click
-  try {
-    const audio = new Audio("/public/sounds/confirm.mp3");
-    audio.volume = 0.5;
-
-    // Intenta reproducir el sonido; si el navegador bloquea, muestra un aviso en consola
-    audio.play().catch(() => {
-      console.warn("⚠️ Reproducción automática de audio bloqueada por el navegador.");
-    });
-  } catch (audioError) {
-    console.warn("⚠️ No se pudo reproducir el sonido:", audioError);
-  }
-
-  try {
-    // Crear estructura IOrder
-    const items: IOrderItem[] = cart.map((item: any) => ({
-      productoId: item.id,
-      nombre: item.name,
-      cantidad: item.qty,
-      precioUnitario: item.price,
-      subtotal: item.qty * item.price,
-    }));
-
-    const total = items.reduce((acc, i) => acc + i.subtotal, 0)+SHIPPING; // + envío
-
-    const pedido: Omit<IOrder, "id" | "fecha"> = {
-      usuarioId,
-      total,
-      estado: "PENDIENTE",
-      items,
-    };
-
-    console.log("📦 Pedido enviado al backend:", pedido);
-
-    // ✅ Envío directo al backend (sin usar api.ts)
-    const response = await fetch(`${API_BASE_URL}/pedidos`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify(pedido),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error HTTP ${response.status}`);
+    if (!cart.length) {
+      alert("Tu carrito está vacío.");
+      return;
     }
 
-    const result = await response.json();
-    console.log("✅ Pedido confirmado:", result);
+    if (!usuarioId) {
+      alert("Error: no se detectó un usuario autenticado.");
+      return;
+    }
 
-    // Animación y limpieza
-    showConfirmationAnimation();
+    try {
+      const items: IOrderItem[] = cart.map((item: any) => ({
+        productoId: item.id,
+        cantidad: item.qty,
+        subtotal: item.qty * item.price,
+      }));
 
-    setTimeout(() => {
-      localStorage.removeItem("cart");
-      window.location.href = "/src/pages/client/orders/orders.html";
-    }, 3000);
-  } catch (err: any) {
-    console.error("Error al confirmar pedido:", err);
-    alert("Error al confirmar tu compra. Intenta nuevamente.");
+      const total = items.reduce((acc, i) => acc + i.subtotal, 0) + SHIPPING;
+
+      const pedido: Omit<IOrder, "id" | "fecha"> = {
+        usuarioId,
+        total,
+        estado: "PENDIENTE",
+        items,
+      };
+
+      console.log("📦 Pedido enviado:", pedido);
+
+      const response = await fetch(`${API_BASE_URL}/pedidos`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(pedido),
+      });
+
+      if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
+
+      const result = await response.json();
+      console.log("✅ Pedido confirmado:", result);
+
+      showConfirmationAnimation();
+      setTimeout(() => {
+        localStorage.removeItem("cart");
+        window.location.href = "/src/pages/client/orders/orders.html";
+      }, 3000);
+    } catch (err: any) {
+      console.error("Error al confirmar pedido:", err);
+      alert("Error al confirmar tu compra. Intenta nuevamente.");
+    }
   }
-}
-
 
   // ---------------------- BOTONES DEL RESUMEN ----------------------
   ($("#checkout") as HTMLButtonElement).onclick = enviarPedidoAlBackend;
