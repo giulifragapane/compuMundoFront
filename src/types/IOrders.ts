@@ -3,7 +3,7 @@ export interface IOrderItem {
   nombre: string;
   cantidad: number;
   precioUnitario: number;
-  total: number;
+  subtotal: number;
 }
 
 export type OrderStatus = 'PENDIENTE' | 'CONFIRMADO' | 'CANCELADO' | 'TERMINADO';
@@ -12,7 +12,6 @@ export interface IOrder {
   id: number;
   usuarioId: number;
   fecha: string;
-  subtotal: number;
   total: number;
   estado: OrderStatus;
   items: IOrderItem[];

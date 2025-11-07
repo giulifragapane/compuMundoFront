@@ -1,12 +1,13 @@
 import { routeGuard } from "../../../utils/routeGuard";
 import { logout } from "../../../utils/auth";
-//import { api } from "../../../utils/api";
+import { PATHS } from "../../../utils/navigate";
+import type { IOrder, IOrderItem } from "../../../types/IOrders";
 
 // ==============================
 // 🔐 Protección de ruta
 // ==============================
 document.addEventListener("DOMContentLoaded", () => {
-  routeGuard("USER"); // Solo usuarios autenticados
+  routeGuard("USER");
   inicializarCarrito();
 });
 
@@ -22,10 +23,8 @@ function inicializarCarrito() {
       localStorage.removeItem("username");
       localStorage.removeItem("role");
       localStorage.removeItem("token");
-      window.location.href = "/src/pages/auth/login/login.html";
+      window.location.href = PATHS.LOGIN;
     });
-  } else {
-    console.warn("⚠️ No se encontró el botón de Cerrar Sesión (#btn-logout).");
   }
 
   // ---------------------- MOSTRAR NOMBRE EN HEADER ----------------------
@@ -34,25 +33,27 @@ function inicializarCarrito() {
   const storedRole = localStorage.getItem("role");
 
   if (userNameSpan) {
-    if (storedUser) {
-      userNameSpan.textContent = storedUser;
-    } else {
-      userNameSpan.textContent =
-        storedRole?.toUpperCase() === "ADMIN" ? "Administrador" : "Usuario";
-    }
+    userNameSpan.textContent = storedUser
+      ? storedUser
+      : storedRole?.toUpperCase() === "ADMIN"
+      ? "Administrador"
+      : "Usuario";
   }
 
   // ---------------------- UTILIDADES ----------------------
   const $ = (s: string) => document.querySelector(s) as HTMLElement;
   const money = (v: number) =>
-    `$${v.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  const SHIPPING = 500;
+    `$${v.toLocaleString("es-AR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  const SHIPPING = 0;
 
-  // ---------------------- ACTUALIZAR CANTIDAD EN ICONO ----------------------
   function updateCartBadge() {
     const b = $("#cartBadge");
     const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-    if (b) b.textContent = String(cart.reduce((n: number, i: any) => n + (i.qty || 0), 0));
+    if (b)
+      b.textContent = String(cart.reduce((n: number, i: any) => n + (i.qty || 0), 0));
   }
 
   // ---------------------- RENDERIZAR CARRITO ----------------------
@@ -92,8 +93,8 @@ function inicializarCarrito() {
     shippingEl.textContent = money(cart.length ? SHIPPING : 0);
     totalEl.textContent = money(subtotal + (cart.length ? SHIPPING : 0));
 
-    // Eventos de botones
-    itemsEl.querySelectorAll<HTMLButtonElement>(".plus").forEach((btn) => {
+    // Eventos de cantidad
+    itemsEl.querySelectorAll<HTMLButtonElement>(".plus").forEach((btn) =>
       btn.addEventListener("click", (e: any) => {
         const idx = parseInt(e.currentTarget.dataset.idx);
         const cart = JSON.parse(localStorage.getItem("cart") || "[]");
@@ -101,10 +102,10 @@ function inicializarCarrito() {
         localStorage.setItem("cart", JSON.stringify(cart));
         render();
         updateCartBadge();
-      });
-    });
+      })
+    );
 
-    itemsEl.querySelectorAll<HTMLButtonElement>(".minus").forEach((btn) => {
+    itemsEl.querySelectorAll<HTMLButtonElement>(".minus").forEach((btn) =>
       btn.addEventListener("click", (e: any) => {
         const idx = parseInt(e.currentTarget.dataset.idx);
         const cart = JSON.parse(localStorage.getItem("cart") || "[]");
@@ -112,10 +113,10 @@ function inicializarCarrito() {
         localStorage.setItem("cart", JSON.stringify(cart));
         render();
         updateCartBadge();
-      });
-    });
+      })
+    );
 
-    itemsEl.querySelectorAll<HTMLButtonElement>(".remove").forEach((btn) => {
+    itemsEl.querySelectorAll<HTMLButtonElement>(".remove").forEach((btn) =>
       btn.addEventListener("click", (e: any) => {
         const idx = parseInt(e.currentTarget.dataset.idx);
         const cart = JSON.parse(localStorage.getItem("cart") || "[]");
@@ -123,8 +124,8 @@ function inicializarCarrito() {
         localStorage.setItem("cart", JSON.stringify(cart));
         render();
         updateCartBadge();
-      });
-    });
+      })
+    );
   }
 
   // ------------------- ANIMACIÓN DE CONFIRMACIÓN -------------------
@@ -140,54 +141,88 @@ function inicializarCarrito() {
     `;
     document.body.appendChild(overlay);
 
-  // ⏳ Mostrar animación y luego cerrar
-  setTimeout(() => {
-    overlay.classList.add("hide"); 
     setTimeout(() => {
-      localStorage.removeItem("cart");
-      overlay.remove();
-      window.location.href = "/src/pages/store/home/storeHome.html";
-    }, 600);
-  }, 2800);
-}
+      overlay.classList.add("hide");
+      setTimeout(() => overlay.remove(), 600);
+    }, 2800);
+  }
 
   // ---------------------- ENVIAR PEDIDO AL BACKEND ----------------------
-  async function enviarPedidoAlBackend() {
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-    // const username = localStorage.getItem("username") || "Usuario";
-    // const token = localStorage.getItem("token");
+async function enviarPedidoAlBackend() {
+  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+  const usuarioId = parseInt(localStorage.getItem("userId") || "0", 10);
+  const token = localStorage.getItem("token");
+  const API_BASE_URL = import.meta.env.VITE_API_URL; // misma constante que en api.ts
 
-    if (!cart.length) {
-      alert("Tu carrito está vacío.");
-      return;
-    }
-
-    try {
-      const audio = new Audio("/sounds/confirm.mp3");
-      audio.volume = 0.5;
-      audio.play().catch((err) => console.warn("⚠️ Audio bloqueado:", err));
-
-      showConfirmationAnimation();
-
-      /*
-      const pedido = {
-        usuario: username,
-        items: cart.map((item: any) => ({
-          idProducto: item.id,
-          cantidad: item.qty,
-        })),
-      };
-
-      const response = await api.post("/pedidos/confirmar", pedido, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      console.log("✅ Pedido confirmado:", response);
-      */
-    } catch (err: any) {
-      console.error("Error al confirmar pedido:", err);
-      alert("Error al confirmar tu compra. Intenta nuevamente.");
-    }
+  if (!cart.length) {
+    alert("Tu carrito está vacío.");
+    return;
   }
+
+  // 🎵 Reproducir sonido de confirmación inmediatamente tras el click
+  try {
+    const audio = new Audio("/public/sounds/confirm.mp3");
+    audio.volume = 0.5;
+
+    // Intenta reproducir el sonido; si el navegador bloquea, muestra un aviso en consola
+    audio.play().catch(() => {
+      console.warn("⚠️ Reproducción automática de audio bloqueada por el navegador.");
+    });
+  } catch (audioError) {
+    console.warn("⚠️ No se pudo reproducir el sonido:", audioError);
+  }
+
+  try {
+    // Crear estructura IOrder
+    const items: IOrderItem[] = cart.map((item: any) => ({
+      productoId: item.id,
+      nombre: item.name,
+      cantidad: item.qty,
+      precioUnitario: item.price,
+      subtotal: item.qty * item.price,
+    }));
+
+    const total = items.reduce((acc, i) => acc + i.subtotal, 0)+SHIPPING; // + envío
+
+    const pedido: Omit<IOrder, "id" | "fecha"> = {
+      usuarioId,
+      total,
+      estado: "PENDIENTE",
+      items,
+    };
+
+    console.log("📦 Pedido enviado al backend:", pedido);
+
+    // ✅ Envío directo al backend (sin usar api.ts)
+    const response = await fetch(`${API_BASE_URL}/pedidos`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(pedido),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log("✅ Pedido confirmado:", result);
+
+    // Animación y limpieza
+    showConfirmationAnimation();
+
+    setTimeout(() => {
+      localStorage.removeItem("cart");
+      window.location.href = "/src/pages/client/orders/orders.html";
+    }, 3000);
+  } catch (err: any) {
+    console.error("Error al confirmar pedido:", err);
+    alert("Error al confirmar tu compra. Intenta nuevamente.");
+  }
+}
+
 
   // ---------------------- BOTONES DEL RESUMEN ----------------------
   ($("#checkout") as HTMLButtonElement).onclick = enviarPedidoAlBackend;

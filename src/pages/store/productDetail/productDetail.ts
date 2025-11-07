@@ -1,6 +1,11 @@
 import { routeGuard } from "../../../utils/routeGuard";
 import { logout } from "../../../utils/auth";
-import type { IProduct } from "../../../types/IProduct"; // ✅ Importamos la interfaz
+import { navigateTo, PATHS } from "../../../utils/navigate";
+import type { IProduct } from "../../../types/IProduct";
+import {
+  obtenerProductos,
+  obtenerProductoPorId,
+} from "../../admin/products/products";
 
 // ==============================
 // 🔐 Protección de ruta
@@ -13,19 +18,16 @@ document.addEventListener("DOMContentLoaded", () => {
 // ==============================
 // 🛍️ Lógica del detalle de producto
 // ==============================
-function inicializarDetalleProducto() {
+async function inicializarDetalleProducto() {
   // ---------------------- BOTÓN DE CERRAR SESIÓN ----------------------
   const logoutButton = document.getElementById("btn-logout");
   if (logoutButton) {
     logoutButton.addEventListener("click", () => {
       logout();
-
-      // Limpieza adicional
       localStorage.removeItem("username");
       localStorage.removeItem("role");
       localStorage.removeItem("token");
-
-      window.location.href = "/src/pages/auth/login/login.html";
+      window.location.href = PATHS.LOGIN;
     });
   } else {
     console.warn("⚠️ No se encontró el botón de Cerrar Sesión (#btn-logout).");
@@ -53,12 +55,6 @@ function inicializarDetalleProducto() {
       maximumFractionDigits: 2,
     })}`;
 
-  // ---------------------- FUNCIONES DE UTILIDAD ----------------------
-  function getById(id: number): IProduct | null {
-    const items: IProduct[] = JSON.parse(localStorage.getItem("products") || "[]");
-    return items.find((p) => p.id === id) || null;
-  }
-
   function updateCartBadge() {
     const b = $("#cartBadge");
     const cart = JSON.parse(localStorage.getItem("cart") || "[]");
@@ -79,20 +75,36 @@ function inicializarDetalleProducto() {
   const minus = $("#minus") as HTMLButtonElement;
   const add = $("#addCart") as HTMLButtonElement;
 
-  const p = getById(id);
-  if (p) {
-    img.src = p.imagen;
-    nameEl.textContent = p.nombre;
-    priceEl.textContent = money(p.precio);
-    descEl.textContent = p.descripcion;
-    stockBadge.textContent = p.disponible
-      ? `Disponible (Stock: ${p.stock})`
-      : "No disponible";
 
-    if (!p.disponible) {
-      add.disabled = true;
-      add.classList.add("ghost");
-    }
+  // ---------------------- OBTENER PRODUCTO DESDE LA API ----------------------
+  let p: IProduct | null = null;
+  try {
+    p = await obtenerProductoPorId(id);
+  } catch (error) {
+    console.warn("⚠️ No se pudo obtener el producto individual. Cargando lista completa...");
+    const productos = await obtenerProductos();
+    p = productos.find((prod: IProduct) => prod.id === id) || null;
+  }
+
+  if (!p) {
+    console.error("❌ Producto no encontrado.");
+    alert("El producto no existe o fue eliminado.");
+    navigateTo(PATHS.HOME_CLIENT);
+    return;
+  }
+
+  // ---------------------- RENDERIZAR DETALLE ----------------------
+  img.src = p.imagen || "https://via.placeholder.com/300x200";
+  nameEl.textContent = p.nombre;
+  priceEl.textContent = money(p.precio);
+  descEl.textContent = p.descripcion || "Sin descripción disponible.";
+  stockBadge.textContent = p.disponible
+    ? `Disponible (Stock: ${p.stock})`
+    : "No disponible";
+
+  if (!p.disponible) {
+    add.disabled = true;
+    add.classList.add("ghost");
   }
 
   // ---------------------- EVENTOS ----------------------
@@ -120,6 +132,7 @@ function inicializarDetalleProducto() {
     updateCartBadge();
     location.href = "../cart/cart.html"; // Ir al carrito
   };
+
 
   updateCartBadge();
 }

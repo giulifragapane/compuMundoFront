@@ -33,11 +33,7 @@ form.addEventListener("submit", async (e) => {
       throw new Error("Respuesta del servidor inválida. Falta token o rol.");
     }
 
-    saveAuthData(response.token, user.rol);
-
-    let displayName = user.nombre?.trim() || (user.rol.toUpperCase() === "ADMIN" ? "Administrador" : "Usuario");
-    localStorage.setItem("username", displayName);
-    localStorage.setItem("role", user.rol);
+    saveAuthData(response.token, user.rol, user.nombre || user.mail, user.id);
 
     const rol = user.rol.toUpperCase();
     if (rol === "ADMIN") {

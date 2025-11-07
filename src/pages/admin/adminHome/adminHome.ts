@@ -303,5 +303,20 @@ function inicializarPanelAdmin() {
       });
     });
   }
+
+  // ================================
+  // 🔁 ACTUALIZACIÓN AUTOMÁTICA
+  // ================================
+
+  async function actualizarTablasPeriodicamente() {
+    try {
+      await Promise.all([cargarCategorias(), cargarProductos()]);
+    } catch (err) {
+      console.error("Error al actualizar las tablas automáticamente:", err);
+    }
+  }
+
+  actualizarTablasPeriodicamente();        // primera carga inmediata
+  setInterval(actualizarTablasPeriodicamente, 60000); // luego cada 10s
 }
 
