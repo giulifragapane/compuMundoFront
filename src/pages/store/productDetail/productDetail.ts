@@ -1,98 +1,125 @@
+import { routeGuard } from "../../../utils/routeGuard";
 import { logout } from "../../../utils/auth";
+import type { IProduct } from "../../../types/IProduct"; // ✅ Importamos la interfaz
 
-// ---------------------- BOTÓN DE CERRAR SESIÓN ----------------------
-const logoutButton = document.getElementById("btn-logout");
-if (logoutButton) {
-  logoutButton.addEventListener("click", () => {
-    // Elimina datos de sesión
-    logout();
+// ==============================
+// 🔐 Protección de ruta
+// ==============================
+document.addEventListener("DOMContentLoaded", () => {
+  routeGuard("USER"); // Solo usuarios autenticados pueden acceder
+  inicializarDetalleProducto();
+});
 
-    // Limpieza manual por si tu función logout() no borra todo
-    localStorage.removeItem("username");
-    localStorage.removeItem("role");
-    localStorage.removeItem("token");
+// ==============================
+// 🛍️ Lógica del detalle de producto
+// ==============================
+function inicializarDetalleProducto() {
+  // ---------------------- BOTÓN DE CERRAR SESIÓN ----------------------
+  const logoutButton = document.getElementById("btn-logout");
+  if (logoutButton) {
+    logoutButton.addEventListener("click", () => {
+      logout();
 
-    // Redirigir al login
-    window.location.href = "/src/pages/auth/login/login.html";
-  });
-} else {
-  console.warn("⚠️ No se encontró el botón de Cerrar Sesión (#btn-logout).");
-}
+      // Limpieza adicional
+      localStorage.removeItem("username");
+      localStorage.removeItem("role");
+      localStorage.removeItem("token");
 
-// ---------------------- MOSTRAR NOMBRE EN HEADER ----------------------
-const userNameSpan = document.getElementById("user-name");
-const storedUser = localStorage.getItem("username");
-const storedRole = localStorage.getItem("role");
-
-if (userNameSpan) {
-  if (storedUser) {
-    userNameSpan.textContent = storedUser;
+      window.location.href = "/src/pages/auth/login/login.html";
+    });
   } else {
-    // Si no hay nombre, mostramos uno genérico según rol
-    if (storedRole?.toUpperCase() === "ADMIN") {
-      userNameSpan.textContent = "Administrador";
+    console.warn("⚠️ No se encontró el botón de Cerrar Sesión (#btn-logout).");
+  }
+
+  // ---------------------- MOSTRAR NOMBRE EN HEADER ----------------------
+  const userNameSpan = document.getElementById("user-name");
+  const storedUser = localStorage.getItem("username");
+  const storedRole = localStorage.getItem("role");
+
+  if (userNameSpan) {
+    if (storedUser) {
+      userNameSpan.textContent = storedUser;
     } else {
-      userNameSpan.textContent = "Usuario";
+      userNameSpan.textContent =
+        storedRole?.toUpperCase() === "ADMIN" ? "Administrador" : "Usuario";
     }
   }
-}
 
-type Product = {
-  id:number; name:string; description:string; price:number;
-  image:string; stock:number; categoryId:number; categoryName:string; available:boolean
-};
+  // ---------------------- UTILIDADES ----------------------
+  const $ = (s: string) => document.querySelector(s) as HTMLElement;
+  const money = (v: number) =>
+    `$${v.toLocaleString("es-AR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
 
-const $ = (s:string)=>document.querySelector(s) as HTMLElement;
-const money = (v:number)=>`$${v.toLocaleString("es-AR",{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+  // ---------------------- FUNCIONES DE UTILIDAD ----------------------
+  function getById(id: number): IProduct | null {
+    const items: IProduct[] = JSON.parse(localStorage.getItem("products") || "[]");
+    return items.find((p) => p.id === id) || null;
+  }
 
-function getById(id:number):Product|null{
-  const items:Product[] = JSON.parse(localStorage.getItem("products") || "[]");
-  return items.find(p=>p.id===id) || null;
-}
-function updateCartBadge(){
-  const b = $("#cartBadge");
-  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-  if(b) b.textContent = String(cart.reduce((n:number,i:any)=>n+(i.qty||0),0));
-}
+  function updateCartBadge() {
+    const b = $("#cartBadge");
+    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+    if (b) b.textContent = String(cart.reduce((n: number, i: any) => n + (i.qty || 0), 0));
+  }
 
-// Parámetro ?id=...
-const params = new URLSearchParams(location.search);
-const id = parseInt(params.get("id") || "0",10);
+  // ---------------------- PARÁMETROS Y ELEMENTOS ----------------------
+  const params = new URLSearchParams(location.search);
+  const id = parseInt(params.get("id") || "0", 10);
 
-// Elementos
-const img = $("#img") as HTMLImageElement;
-const nameEl = $("#name");
-const priceEl = $("#price");
-const descEl = $("#desc");
-const stockBadge = $("#stockBadge");
-const qty = $("#qty") as HTMLInputElement;
-const plus = $("#plus") as HTMLButtonElement;
-const minus = $("#minus") as HTMLButtonElement;
-const add = $("#addCart") as HTMLButtonElement;
+  const img = $("#img") as HTMLImageElement;
+  const nameEl = $("#name");
+  const priceEl = $("#price");
+  const descEl = $("#desc");
+  const stockBadge = $("#stockBadge");
+  const qty = $("#qty") as HTMLInputElement;
+  const plus = $("#plus") as HTMLButtonElement;
+  const minus = $("#minus") as HTMLButtonElement;
+  const add = $("#addCart") as HTMLButtonElement;
 
-const p = getById(id);
-if(p){
-  img.src = p.image;
-  nameEl.textContent = p.name;
-  priceEl.textContent = money(p.price);
-  descEl.textContent = p.description;
-  stockBadge.textContent = p.available ? `Disponible (Stock: ${p.stock})` : "No disponible";
-  if(!p.available){ add.disabled = true; add.classList.add("ghost"); }
-}
-plus.onclick = ()=> qty.value = String(Math.max(1,(parseInt(qty.value||"1")||1)+1));
-minus.onclick = ()=> qty.value = String(Math.max(1,(parseInt(qty.value||"1")||1)-1));
+  const p = getById(id);
+  if (p) {
+    img.src = p.imagen;
+    nameEl.textContent = p.nombre;
+    priceEl.textContent = money(p.precio);
+    descEl.textContent = p.descripcion;
+    stockBadge.textContent = p.disponible
+      ? `Disponible (Stock: ${p.stock})`
+      : "No disponible";
 
-add.onclick = ()=>{
-  if(!p) return;
-  const n = Math.max(1, parseInt(qty.value||"1")||1);
-  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-  const idx = cart.findIndex((i:any)=>i.id===p.id);
-  if(idx>=0) cart[idx].qty += n;
-  else cart.push({id:p.id, name:p.name, price:p.price, image:p.image, qty:n});
-  localStorage.setItem("cart", JSON.stringify(cart));
+    if (!p.disponible) {
+      add.disabled = true;
+      add.classList.add("ghost");
+    }
+  }
+
+  // ---------------------- EVENTOS ----------------------
+  plus.onclick = () =>
+    (qty.value = String(Math.max(1, (parseInt(qty.value || "1") || 1) + 1)));
+
+  minus.onclick = () =>
+    (qty.value = String(Math.max(1, (parseInt(qty.value || "1") || 1) - 1)));
+
+  add.onclick = () => {
+    if (!p) return;
+    const n = Math.max(1, parseInt(qty.value || "1") || 1);
+    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+    const idx = cart.findIndex((i: any) => i.id === p.id);
+    if (idx >= 0) cart[idx].qty += n;
+    else
+      cart.push({
+        id: p.id,
+        name: p.nombre,
+        price: p.precio,
+        image: p.imagen,
+        qty: n,
+      });
+    localStorage.setItem("cart", JSON.stringify(cart));
+    updateCartBadge();
+    location.href = "../cart/cart.html"; // Ir al carrito
+  };
+
   updateCartBadge();
-  // Ir al carrito como en las capturas
-  location.href = "../cart/cart.html";
-};
-
-updateCartBadge();
+}

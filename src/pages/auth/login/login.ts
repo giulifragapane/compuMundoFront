@@ -1,5 +1,10 @@
 import { api } from "../../../utils/api";
 import { saveAuthData } from "../../../utils/auth";
+import { publicGuard,navigateTo,PATHS } from "../../../utils/navigate.ts"; // 🧩 Protección pública
+
+document.addEventListener("DOMContentLoaded", () => {
+  publicGuard(); // Evita acceso a login si ya hay sesión
+});
 
 const form = document.getElementById("loginForm") as HTMLFormElement;
 const errorMsg = document.getElementById("error") as HTMLParagraphElement;
@@ -19,58 +24,32 @@ form.addEventListener("submit", async (e) => {
   }
 
   try {
-    // 🔹 Llamada al backend
     const response = await api.post("/auth/login", credentials);
     console.log("Respuesta del backend:", response);
 
-    // 🔹 Detectar si el usuario viene dentro de un objeto "usuario"
     const user = response.usuario || response;
 
-    // 🔹 Validar datos mínimos
     if (!response?.token || !user?.rol) {
       throw new Error("Respuesta del servidor inválida. Falta token o rol.");
     }
 
-    // ------------------ GUARDAR DATOS EN LOCALSTORAGE ------------------
-
-    // Guarda token y rol
     saveAuthData(response.token, user.rol);
 
-    // Determinar el nombre visible del usuario
-    let displayName = "Usuario"; // valor por defecto
-    if (user.nombre && user.nombre.trim() !== "") {
-      // Si viene el nombre, usarlo
-      displayName = user.nombre.trim();
-    } else {
-      // Si no viene nombre, mostrar según su rol
-      if (user.rol.toUpperCase() === "ADMIN") {
-        displayName = "Administrador";
-      } else if (user.rol.toUpperCase() === "USUARIO") {
-        displayName = "Usuario";
-      }
-    }
-
-    // Guardar nombre y rol para el header
+    let displayName = user.nombre?.trim() || (user.rol.toUpperCase() === "ADMIN" ? "Administrador" : "Usuario");
     localStorage.setItem("username", displayName);
     localStorage.setItem("role", user.rol);
 
-    console.log("Usuario logueado:", displayName, "-", user.rol);
-
-    // ------------------ REDIRECCIÓN SEGÚN ROL ------------------
     const rol = user.rol.toUpperCase();
-
     if (rol === "ADMIN") {
-      window.location.href = "/src/pages/admin/adminHome/adminHome.html";
+      navigateTo(PATHS.HOME_ADMIN);
     } else if (rol === "USUARIO") {
-      window.location.href = "/src/pages/store/home/storeHome.html";
+      navigateTo(PATHS.HOME_CLIENT);
     } else {
       errorMsg.textContent = "Rol no reconocido. Contacte con soporte.";
-      console.warn("Rol no válido:", user.rol);
     }
 
   } catch (err: any) {
     console.error("Error al iniciar sesión:", err);
-    errorMsg.textContent =
-      err.message || "Error al iniciar sesión. Verifica tus credenciales.";
+    errorMsg.textContent = err.message || "Error al iniciar sesión. Verifica tus credenciales.";
   }
 });

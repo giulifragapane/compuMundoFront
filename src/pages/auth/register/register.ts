@@ -1,5 +1,10 @@
 import { api } from "../../../utils/api";
 import { saveAuthData } from "../../../utils/auth";
+import { publicGuard } from "../../../utils/navigate"; // 🧩 Protección pública
+
+document.addEventListener("DOMContentLoaded", () => {
+  publicGuard(); // Evita acceso si el usuario ya está autenticado
+});
 
 const form = document.getElementById("registerForm") as HTMLFormElement;
 const errorMsg = document.getElementById("error") as HTMLParagraphElement;
@@ -16,7 +21,6 @@ form.addEventListener("submit", async (e) => {
     rol: (document.getElementById("role") as HTMLSelectElement).value.toUpperCase(),
   };
 
-  // Validaciones básicas
   if (!userData.nombre || !userData.apellido || !userData.mail || !userData.password) {
     errorMsg.textContent = "Por favor, completa todos los campos.";
     return;
@@ -35,6 +39,8 @@ form.addEventListener("submit", async (e) => {
     }
 
     saveAuthData(user.token, user.rol);
+
+    // ✅ Redirigir directamente al login
     window.location.href = "../login/login.html";
 
   } catch (err: any) {

@@ -1,36 +1,58 @@
-const AUTH_TOKEN_KEY = 'authToken'; // Clave para almacenar el token
-const AUTH_USER_ROLE = 'userRole'; // Clave para almacenar el rol
 
-/*
-Guarda el token y rol del usuario en localStorage.
-Esto permite mantener la sesión abierta en el frontend.*/
-export function saveAuthData(token: string, role: string): void {
-    localStorage.setItem(AUTH_TOKEN_KEY, token);
-    localStorage.setItem(AUTH_USER_ROLE, role);
+// === Constantes de claves ===
+const AUTH_TOKEN_KEY = "authToken";
+const AUTH_USER_ROLE = "userRole";
+const AUTH_USERNAME = "username"; // opcional si guardás nombre del usuario
+
+// === Guardar datos ===
+export function saveAuthData(token: string, role: string, username?: string): void {
+  localStorage.setItem(AUTH_TOKEN_KEY, token);
+  localStorage.setItem(AUTH_USER_ROLE, role);
+  if (username) localStorage.setItem(AUTH_USERNAME, username);
 }
 
-/*
-Obtiene el token de autenticación del localStorage.*/
-export function getToken(): string | null { // Función para obtener el token (String o Null en caso de no existir)
-    return localStorage.getItem(AUTH_TOKEN_KEY);
+// === Obtener token ===
+export function getToken(): string | null {
+  return localStorage.getItem(AUTH_TOKEN_KEY);
 }
 
-/*
-Obtiene el rol del usuario del localStorage.*/
+// === Obtener rol ===
 export function getUserRole(): string | null {
-    return localStorage.getItem(AUTH_USER_ROLE);
+  return localStorage.getItem(AUTH_USER_ROLE);
 }
 
-/*
-Verifica si el usuario está autenticado (si existe un token).*/
+// === Obtener nombre de usuario (si se guarda) ===
+export function getUsername(): string | null {
+  return localStorage.getItem(AUTH_USERNAME);
+}
+
+// === Verificar autenticación ===
 export function isAuthenticated(): boolean {
-    return !!getToken(); // Devuelve true si el token existe
+  return !!getToken();
 }
 
-/**
+// === Verificar tipo de usuario ===
+export function isAdmin(): boolean {
+  return getUserRole()?.toUpperCase() === "ADMIN";
+}
 
-Cierra la sesión eliminando token y rol.*/
+export function isUser(): boolean {
+  return getUserRole()?.toUpperCase() === "USER";
+}
+
+// === Cerrar sesión ===
 export function logout(): void {
-    localStorage.removeItem(AUTH_TOKEN_KEY);
-    localStorage.removeItem(AUTH_USER_ROLE);
+  localStorage.removeItem(AUTH_TOKEN_KEY);
+  localStorage.removeItem(AUTH_USER_ROLE);
+  localStorage.removeItem(AUTH_USERNAME);
+}
+
+// === Verificación general de acceso ===
+export function checkAccess(requiredRole?: "ADMIN" | "USER"): boolean {
+  if (!isAuthenticated()) return false;
+
+  if (requiredRole === "ADMIN" && !isAdmin()) return false;
+  if (requiredRole === "USER" && !isUser() && !isAdmin()) return false;
+
+  return true;
 }
