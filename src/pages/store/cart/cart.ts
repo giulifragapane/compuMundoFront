@@ -3,6 +3,7 @@ import { logout, getUserId, getToken } from "../../../utils/auth";
 import { PATHS } from "../../../utils/navigate";
 import type { IOrder, IOrderItem } from "../../../types/IOrders";
 
+
 // ==============================
 // 🔐 Protección de ruta
 // ==============================
@@ -148,39 +149,50 @@ function inicializarCarrito() {
   }
 
   // ---------------------- ENVIAR PEDIDO Y DETALLES ----------------------
-  async function enviarPedidoAlBackend() {
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-    const usuarioId = getUserId();
-    const token = getToken();
-    const API_BASE_URL = import.meta.env.VITE_API_URL;
+  async function enviarPedidoAlBackend(): Promise<void> {
+    const cart: any[] = JSON.parse(localStorage.getItem("cart") || "[]");
+    const usuarioId: number | null = getUserId();
+    const token: string | null = getToken();
+    const API_BASE_URL: string = import.meta.env.VITE_API_URL;
 
     if (!cart.length) {
       alert("Tu carrito está vacío.");
       return;
     }
 
-    if (!usuarioId) {
+    if (usuarioId === null || isNaN(usuarioId)) {
       alert("Error: no se detectó un usuario autenticado.");
       return;
     }
 
     try {
-      const items: IOrderItem[] = cart.map((item: any) => ({
+      // 🔸 Convertimos el carrito al formato de items (IOrderItem[])
+      const items: IOrderItem[] = cart.map((item) => ({
         productoId: item.id,
+        nombre: item.name,
         cantidad: item.qty,
+        precioUnitario: item.price,
         subtotal: item.qty * item.price,
       }));
 
-      const total = items.reduce((acc, i) => acc + i.subtotal, 0) + SHIPPING;
+      // 🔹 Calculamos el total del pedido
+      const total: number = items.reduce(
+        (acc: number, i: IOrderItem) => acc + i.subtotal,
+        0
+      ) + SHIPPING;
 
-      const pedido = {
-        usuarioId,
+      // 🔹 Creamos el objeto pedido completo (IOrder)
+      const pedido: Omit<IOrder, "id" | "fecha"> = {
+        usuarioId: Number(usuarioId),
         total,
         estado: "PENDIENTE",
+        items, // 🔥 los detalles van dentro del pedido
       };
 
-      // 1️⃣ Crear pedido
-      const pedidoResponse = await fetch(`${API_BASE_URL}/pedidos`, {
+      console.log("📦 Pedido enviado al backend:", pedido);
+
+      // 🔸 Enviamos todo en una sola petición
+      const response = await fetch(`${API_BASE_URL}/pedidos`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -189,43 +201,24 @@ function inicializarCarrito() {
         body: JSON.stringify(pedido),
       });
 
-      if (!pedidoResponse.ok) throw new Error("Error al crear el pedido");
-      const pedidoResult = await pedidoResponse.json();
+      if (!response.ok) throw new Error("Error al crear el pedido");
 
-      // 2️⃣ Crear detalles vinculados
-      for (const item of items) {
-        const detalle = {
-          cantidad: item.cantidad,
-          subtotal: item.subtotal,
-          producto_id: item.productoId,
-          pedido_id: pedidoResult.id,
-        };
+      const result: IOrder = await response.json();
+      console.log("✅ Pedido y detalles creados correctamente:", result);
 
-        const detalleRes = await fetch(`${API_BASE_URL}/detalles`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify(detalle),
-        });
-
-        if (!detalleRes.ok) console.warn("❌ Error al crear detalle:", detalle);
-      }
-
-      console.log("✅ Pedido y detalles creados correctamente");
+      // 🎵 Efecto de confirmación + animación
       showConfirmationAnimation();
 
       setTimeout(() => {
         localStorage.removeItem("cart");
         window.location.href = "/src/pages/client/orders/orders.html";
       }, 3000);
-
     } catch (err: any) {
       console.error("Error al confirmar pedido:", err);
       alert("Error al confirmar tu compra. Intenta nuevamente.");
     }
   }
+
 
   // ---------------------- BOTONES DEL RESUMEN ----------------------
   ($("#checkout") as HTMLButtonElement).onclick = enviarPedidoAlBackend;
