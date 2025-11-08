@@ -132,6 +132,9 @@ function inicializarCarrito() {
   // ------------------- ANIMACIÓN DE CONFIRMACIÓN -------------------
   function showConfirmationAnimation() {
     const overlay = document.createElement("div");
+     const audio = new Audio("/sounds/confirm.mp3");
+    audio.volume = 0.6; // volumen moderado
+    audio.play().catch(() => console.warn("No se pudo reproducir el sonido."));
     overlay.classList.add("confirm-overlay");
     overlay.innerHTML = `
       <div class="confirm-box">
