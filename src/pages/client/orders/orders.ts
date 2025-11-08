@@ -13,9 +13,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ============================
-  // 👤 Usuario actual
+  // 👤 Usuario actual (corregido)
   // ============================
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
+  const userId = localStorage.getItem("userId"); // ✅ ID guardado al loguear
+  const ordersList = document.getElementById("ordersList") as HTMLElement;
+
+  // Si no existe el ID, no seguimos
+  if (!userId) {
+    console.error("⚠️ No se encontró el ID de usuario en localStorage");
+    ordersList.innerHTML = `<p class="error">❌ No se pudo identificar al usuario. Iniciá sesión nuevamente.</p>`;
+    return;
+  }
+
   const userNameEl = document.getElementById("user-name") as HTMLElement;
   userNameEl.textContent = userData.nombre || "Usuario";
 
@@ -33,18 +43,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ============================
   // 🎯 Elementos DOM
   // ============================
-  const ordersList = document.getElementById("ordersList") as HTMLElement;
   const modal = document.getElementById("orderModal") as HTMLElement;
   const closeModal = document.getElementById("closeModal") as HTMLElement;
   const filterSelect = document.getElementById("filterStatus") as HTMLSelectElement;
-
   closeModal.addEventListener("click", () => modal.classList.add("hidden"));
 
   // ============================
-  // 📦 Cargar pedidos del usuario (desde backend)
+  // 📦 Cargar pedidos del usuario
   // ============================
   try {
-    const pedidos = await api.get(`/pedidos/usuario/${userData.id}`);
+    ordersList.innerHTML = `<p class="loading">Cargando pedidos...</p>`; // loader simple
+    const pedidos = await api.get(`/pedidos/usuario/${userId}`);
     renderPedidos(pedidos);
   } catch (err) {
     console.error("Error al cargar pedidos:", err);
@@ -57,7 +66,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   filterSelect.addEventListener("change", async () => {
     const estado = filterSelect.value;
     try {
-      const pedidos = await api.get(`/pedidos/usuario/${userData.id}`);
+      const pedidos = await api.get(`/pedidos/usuario/${userId}`);
       let filtrados = pedidos;
       if (estado !== "all")
         filtrados = pedidos.filter((p: any) => p.estado === estado);
@@ -91,6 +100,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       )
       .join("");
 
+    // Evento para ver el detalle de cada pedido
     document.querySelectorAll(".pedido-card").forEach((card) => {
       card.addEventListener("click", async () => {
         const id = (card as HTMLElement).dataset.id;
@@ -105,23 +115,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   async function showDetalle(pedidoId: number) {
     try {
       const pedido = await api.get(`/pedidos/${pedidoId}`);
-
-      // 🔹 Nuevo endpoint optimizado (si lo creaste)
-      // const detalles = await api.get(`/detalles/pedido/${pedidoId}`);
-
-      // 🔹 Si aún no existe el endpoint, usamos el general:
       const detalles = await api.get(`/detalles`);
       const detallesFiltrados = detalles.filter(
         (d: any) => d.pedidoId === pedidoId
       );
 
-      // Estado y fecha
       (document.getElementById("estadoPedido") as HTMLElement).textContent =
         pedido.estado;
       (document.getElementById("fechaPedido") as HTMLElement).textContent =
         new Date(pedido.fecha).toLocaleString();
 
-      // Datos de entrega (simulados)
       (document.getElementById("direccionEntrega") as HTMLElement).textContent =
         pedido.direccion || "Calle única 254";
       (document.getElementById("telefonoEntrega") as HTMLElement).textContent =
@@ -129,7 +132,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       (document.getElementById("metodoPago") as HTMLElement).textContent =
         pedido.metodoPago || "Efectivo";
 
-      // Totales
       const subtotal = pedido.total - 500;
       (document.getElementById("subtotalPedido") as HTMLElement).textContent =
         `$${subtotal.toFixed(2)}`;
@@ -138,13 +140,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       (document.getElementById("totalPedido") as HTMLElement).textContent =
         `$${pedido.total.toFixed(2)}`;
 
-      // Lista de productos
       const productosLista = document.getElementById("productosLista")!;
       productosLista.innerHTML = detallesFiltrados
         .map(
           (d: any) => `
           <div class="producto-item">
-            <span>${d.productoNombre || "Producto #"+d.productoId} (x${d.cantidad})</span>
+            <span>${d.productoNombre || "Producto #" + d.productoId} (x${d.cantidad})</span>
             <span>$${d.subtotal}</span>
           </div>
         `
