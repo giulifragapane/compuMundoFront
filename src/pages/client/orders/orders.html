@@ -1,1 +1,80 @@
-<h1>Hola Cliente</h1>
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Food Store - Mis Pedidos</title>
+  <link rel="stylesheet" href="./orders.css" />
+</head>
+<body>
+  <!-- ====== HEADER ====== -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-icon">🍕</span>
+        <a class="brand-name" href="../../store/home/storeHome.html">Food Store</a>
+      </div>
+      <nav class="mainnav">
+        <a href="../../store/home/storeHome.html">Inicio</a>
+        <a href="#" class="active">Mis Pedidos</a>
+        <a class="cart-link" href="../../store/cart/cart.html">
+          <span class="cart-icon">🛒</span>
+          Carrito <span id="cartBadge" class="cart-badge">0</span>
+        </a>
+        <span id="user-name" class="user-name"></span>
+        <button id="btn-logout" class="logout-btn">Cerrar Sesión</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ====== CONTENIDO ====== -->
+  <main class="wrap">
+    <h2>Mis Pedidos</h2>
+    <select id="filterStatus" class="select-filter">
+      <option value="all">Todos</option>
+      <option value="PENDIENTE">Pendiente</option>
+      <option value="ENTREGADO">Entregado</option>
+    </select>
+
+    <section class="orders-list" id="ordersList">
+      <!-- Se llena dinámicamente con TS -->
+    </section>
+  </main>
+
+  <!-- ====== MODAL DETALLE ====== -->
+  <div id="orderModal" class="order-modal hidden">
+    <div class="order-modal-content">
+      <button class="close-modal" id="closeModal">&times;</button>
+
+      <div class="detalle-header">
+        <span id="estadoPedido" class="estado">PENDIENTE</span>
+        <p id="fechaPedido" class="muted"></p>
+      </div>
+
+      <div class="detalle-seccion">
+        <h3>📍 Información de Entrega</h3>
+        <p><strong>Dirección:</strong> <span id="direccionEntrega">Calle única 254</span></p>
+        <p><strong>Teléfono:</strong> <span id="telefonoEntrega">26547366</span></p>
+        <p><strong>Método de pago:</strong> <span id="metodoPago">Efectivo</span></p>
+      </div>
+
+      <div class="detalle-seccion">
+        <h3>📦 Productos</h3>
+        <div id="productosLista"></div>
+        <div class="total-linea">
+          <p>Subtotal: <span id="subtotalPedido">$0.00</span></p>
+          <p>Envío: <span id="envioPedido">$500.00</span></p>
+          <p><strong>Total:</strong> <span id="totalPedido">$0.00</span></p>
+        </div>
+      </div>
+
+      <div class="alerta">
+        <p>🕒 Tu pedido está siendo procesado</p>
+        <small>Te notificaremos cuando esté listo para entrega.</small>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./orders.ts"></script>
+</body>
+</html>
