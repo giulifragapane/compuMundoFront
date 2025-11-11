@@ -1,322 +1,667 @@
+// ===============================
+// Admin Home (SPA + CRUD + Kanban)
+// ===============================
+import { api } from "../../../utils/api";
 import { logout } from "../../../utils/auth";
-import { routeGuard } from "../../../utils/routeGuard.ts"; 
+import { routeGuard } from "../../../utils/routeGuard.ts";
 import "./adminHome.css";
-import {obtenerCategorias, obtenerCategoriaPorId, crearCategoria, actualizarCategoria, eliminarCategoria} 
-from "../categories/categories.ts";
 
-import {obtenerProductos, obtenerProductoPorId, crearProducto, actualizarProducto, eliminarProducto} 
-from "../products/products.ts";
+// Módulos existentes de tu proyecto (CRUD real)
+import {
+  obtenerCategorias,
+  crearCategoria,
+  actualizarCategoria,
+  eliminarCategoria,
+} from "../categories/categories.ts";
+import {
+  obtenerProductos,
+  crearProducto,
+  actualizarProducto,
+  eliminarProducto,
+} from "../products/products.ts";
 
-// ==========================
-// 🔐 PROTECCIÓN DE RUTA ADMIN
-// ==========================
+// ===============================
+// Tipos
+// ===============================
+type Estado = "PENDIENTE" | "PROCESADO" | "ENVIADO" | "ENTREGADO" | "CANCELADO";
+
+interface PedidoItem {
+  nombre: string;
+  cantidad: number;
+  precio: number;
+}
+
+interface Pedido {
+  id: number;
+  cliente?: string;
+  telefono?: string;
+  direccion?: string;
+  metodoPago?: string;
+  fecha?: string;      // ISO o texto
+  envio?: number;      // costo envío
+  total: number;       // total final
+  estado: Estado;
+  productos?: PedidoItem[]; // si viene expandido
+}
+
+const ESTADOS: Estado[] = ["PENDIENTE", "PROCESADO", "ENVIADO", "ENTREGADO", "CANCELADO"];
+
+// Util
+const fmtCurrency = (n: number | undefined | null) =>
+  (n ?? 0).toLocaleString("es-AR", { style: "currency", currency: "ARS" });
+
+// ===============================
+// Arranque protegido
+// ===============================
 document.addEventListener("DOMContentLoaded", () => {
-  routeGuard("ADMIN"); // ✅ Solo permite acceso a administradores
-
-  inicializarPanelAdmin(); // encapsulamos el resto del código en una función
+  routeGuard("ADMIN");
+  inicializarPanelAdmin();
 });
 
-// ==========================
-// FUNCIÓN PRINCIPAL DEL PANEL
-// ==========================
-function inicializarPanelAdmin() {
-
-  // ---------------------- BOTÓN DE CERRAR SESIÓN ----------------------
-  const logoutButton = document.getElementById("btn-logout");
-  if (logoutButton) {
-    logoutButton.addEventListener("click", () => {
-      logout();
-      window.location.href = "/src/pages/auth/login/login.html";
-    });
-  } else {
-    console.warn("⚠️ No se encontró el botón de Cerrar Sesión (#btn-logout).");
+// ===============================
+// SPA helpers
+// ===============================
+function showSection(id: string) {
+  document.querySelectorAll<HTMLElement>(".section").forEach((s) => {
+    s.classList.add("hidden");
+    s.classList.remove("active");
+  });
+  const el = document.getElementById(id);
+  if (el) {
+    el.classList.remove("hidden");
+    el.classList.add("active");
   }
+}
 
-  // ---------------------- MOSTRAR NOMBRE EN HEADER ----------------------
+function setActiveMenuBySection(sectionId: string) {
+  // Quita activo de todos
+  document.querySelectorAll<HTMLAnchorElement>(".menu a").forEach((a) => a.classList.remove("active"));
+
+  const map: Record<string, string> = {
+    "dashboard-section": "",                  // no hay id dedicado en sidebar
+    "categorias-section": "menu-categorias",
+    "productos-section": "menu-productos",
+    "pedidos-section": "menu-pedidos",
+  };
+  const menuId = map[sectionId];
+  if (menuId) document.getElementById(menuId)?.classList.add("active");
+}
+
+// ===============================
+// Inicialización global
+// ===============================
+function inicializarPanelAdmin() {
+  // Header: nombre, logout y navegación superior
   const userNameSpan = document.getElementById("user-name");
   const storedUser = localStorage.getItem("username");
   const storedRole = localStorage.getItem("role");
-
   if (userNameSpan) {
-    if (storedUser) {
-      userNameSpan.textContent = storedUser;
-    } else {
-      userNameSpan.textContent =
-        storedRole?.toUpperCase() === "ADMIN" ? "Administrador" : "Usuario";
-    }
+    userNameSpan.textContent =
+      storedUser || (storedRole?.toUpperCase() === "ADMIN" ? "Administrador" : "Usuario");
   }
 
-  // ---------------------- VARIABLES GLOBALES ----------------------
-  let modoActual: "categoria" | "producto" | null = null;
-  let idEditando: number | null = null;
-
-  // ---------------------- REFERENCIAS ----------------------
-  const menuLinks = document.querySelectorAll<HTMLAnchorElement>(".menu a");
-  const sections = document.querySelectorAll<HTMLElement>(".section");
-  const modal = document.getElementById("form-modal")!;
-  const closeModal = document.getElementById("close-modal")!;
-  const formTitle = document.getElementById("form-title")!;
-  const formContainer = document.getElementById("formulario-dinamico")!;
-  const btnNuevaCategoria = document.getElementById("btn-nueva-categoria")!;
-  const btnNuevoProducto = document.getElementById("btn-nuevo-producto")!;
-  const tablaCategorias = document.getElementById("tabla-categorias") as HTMLElement;
-  const tablaProductos = document.getElementById("tabla-productos") as HTMLElement;
-
-  // ---------------------- NAVEGACIÓN ENTRE SECCIONES ----------------------
-  sections.forEach((s) => s.classList.remove("active"));
-  document.getElementById("dashboard-section")?.classList.add("active");
-
-  menuLinks.forEach((link) => {
-    link.addEventListener("click", (e) => {
-      e.preventDefault();
-      menuLinks.forEach((l) => l.classList.remove("active"));
-      link.classList.add("active");
-      sections.forEach((s) => s.classList.remove("active"));
-
-      const text = link.innerText.trim().toLowerCase();
-      let targetId = "";
-
-      if (text.includes("dashboard")) targetId = "dashboard-section";
-      else if (text.includes("categorías")) targetId = "categorias-section";
-      else if (text.includes("productos")) targetId = "productos-section";
-      else if (text.includes("pedidos")) targetId = "pedidos-section";
-      else if (text.includes("tienda")) targetId = "tienda-section";
-
-      document.getElementById(targetId)?.classList.add("active");
-    });
+  document.getElementById("btn-logout")?.addEventListener("click", () => {
+    logout();
+    window.location.href = "/src/pages/auth/login/login.html";
   });
 
-  // ---------------------- ABRIR FORMULARIOS ----------------------
-  btnNuevaCategoria.addEventListener("click", () => abrirFormulario("categoria"));
-  btnNuevoProducto.addEventListener("click", () => abrirFormulario("producto"));
+  // Header: enlaces superiores
+  document.querySelector(".brand-left .brand")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    showSection("dashboard-section");
+    setActiveMenuBySection("dashboard-section");
+  });
+  document.querySelector('.nav-links a[href="#"]')?.addEventListener("click", (e) => {
+    // "Panel Admin" activo
+    e.preventDefault();
+    showSection("dashboard-section");
+    setActiveMenuBySection("dashboard-section");
+  });
 
-  async function abrirFormulario(modo: "categoria" | "producto", datos: any = null) {
-    modoActual = modo;
-    idEditando = datos?.id ?? null;
+  // Menú lateral
+  document.querySelector('.menu a[href="#"]')?.addEventListener("click", (e) => {
+    // primer item "Dashboard"
+    e.preventDefault();
+    showSection("dashboard-section");
+    setActiveMenuBySection("dashboard-section");
+  });
+  document.getElementById("menu-categorias")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    showSection("categorias-section");
+    setActiveMenuBySection("categorias-section");
+  });
+  document.getElementById("menu-productos")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    showSection("productos-section");
+    setActiveMenuBySection("productos-section");
+  });
+  document.getElementById("menu-pedidos")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    showSection("pedidos-section");
+    setActiveMenuBySection("pedidos-section");
+  });
 
-    formTitle.textContent = datos
-      ? `Editar ${modo === "categoria" ? "Categoría" : "Producto"}`
-      : `Nuevo ${modo === "categoria" ? "Categoría" : "Producto"}`;
+  // Botones de tarjetas del dashboard
+  document.getElementById("btn-categorias")?.addEventListener("click", () => {
+    showSection("categorias-section");
+    setActiveMenuBySection("categorias-section");
+  });
+  document.getElementById("btn-productos")?.addEventListener("click", () => {
+    showSection("productos-section");
+    setActiveMenuBySection("productos-section");
+  });
+  document.getElementById("btn-pedidos")?.addEventListener("click", () => {
+    showSection("pedidos-section");
+    setActiveMenuBySection("pedidos-section");
+  });
 
-    if (modo === "categoria") {
-      formContainer.innerHTML = `
-        <label>Nombre</label>
-        <input id="nombre" type="text" value="${datos?.nombre ?? ""}" required>
-        <label>Descripción</label>
-        <textarea id="descripcion" rows="3">${datos?.descripcion ?? ""}</textarea>
-        <label>Imagen (URL)</label>
-        <input id="imagen" type="text" value="${datos?.imagen ?? ""}">
-        <button type="submit" class="btn-green">${datos ? "Actualizar" : "Guardar"}</button>
-      `;
+  // Mostrar dashboard por defecto
+  showSection("dashboard-section");
+
+  // Cargar dashboard + tablas
+  bootstrapDashboardYTablas();
+
+  // Pedidos (Kanban)
+  inicializarPedidosKanban();
+}
+
+// ===============================
+// Dashboard (counters) + Tablas
+// ===============================
+async function bootstrapDashboardYTablas() {
+  const categoriasCount = document.getElementById("count-categorias")!;
+  const productosCount = document.getElementById("count-productos")!;
+  const pedidosCount = document.getElementById("count-pedidos")!;
+
+  try {
+    const [cats, prods, peds] = await Promise.all([
+      api.get("/categorias"),
+      api.get("/productos"),
+      api.get("/pedidos"),
+    ]);
+    animateCounter(categoriasCount, cats.length ?? 0);
+    animateCounter(productosCount, prods.length ?? 0);
+    animateCounter(pedidosCount, peds.length ?? 0);
+  } catch (e) {
+    categoriasCount.textContent = "-";
+    productosCount.textContent = "-";
+    pedidosCount.textContent = "-";
+    console.error("Error dashboard:", e);
+  }
+
+  await Promise.all([cargarCategoriasUI(), cargarProductosUI()]);
+}
+
+function animateCounter(el: HTMLElement, target: number) {
+  let v = 0;
+  const step = Math.max(1, Math.ceil(target / 50));
+  const it = setInterval(() => {
+    v += step;
+    if (v >= target) {
+      el.textContent = String(target);
+      clearInterval(it);
     } else {
-      try {
-        const categorias = await obtenerCategorias();
-        const categoriasActivas = categorias.filter((c: any) => !c.eliminado);
+      el.textContent = String(v);
+    }
+  }, 20);
+}
 
-        const opcionesCategorias = categoriasActivas
+// ===============================
+// CRUD CATEGORÍAS
+// ===============================
+const tablaCategorias = document.getElementById("tabla-categorias")!;
+const btnNuevaCategoria = document.getElementById("btn-nueva-categoria")!;
+
+// Modal genérico para formularios
+const modal = document.getElementById("form-modal")!;
+const closeModalBtn = document.getElementById("close-modal")!;
+const formTitle = document.getElementById("form-title")!;
+const formContainer = document.getElementById("formulario-dinamico")!;
+
+let modoActual: "categoria" | "producto" | null = null;
+let idEditando: number | null = null;
+
+async function cargarCategoriasUI() {
+  tablaCategorias.innerHTML = "";
+  const categorias = await obtenerCategorias(); // usa tu módulo real
+  categorias
+    .filter((c: any) => !c.eliminado)
+    .forEach((c: any) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${c.id}</td>
+        <td><img src="${c.imagen || "https://placehold.co/60x60"}" width="60" height="60" style="object-fit:cover;border-radius:8px"></td>
+        <td>${c.nombre ?? ""}</td>
+        <td>${c.descripcion ?? ""}</td>
+        <td>
+          <button class="btn-edit editar" data-id="${c.id}" title="Editar">✏️</button>
+          <button class="btn-delete eliminar" data-id="${c.id}" title="Eliminar">🗑️</button>
+        </td>
+      `;
+      tablaCategorias.appendChild(tr);
+    });
+
+  // Delegación de eventos
+  tablaCategorias.querySelectorAll<HTMLButtonElement>("button.editar").forEach((b) =>
+    b.addEventListener("click", async () => {
+      const id = Number(b.dataset.id);
+      // fetch detalle
+      const cat = (await api.get(`/categorias/${id}`)) || null;
+      abrirFormulario("categoria", cat);
+    })
+  );
+  tablaCategorias.querySelectorAll<HTMLButtonElement>("button.eliminar").forEach((b) =>
+    b.addEventListener("click", async () => {
+      const id = Number(b.dataset.id);
+      if (!confirm("¿Eliminar categoría?")) return;
+      await eliminarCategoria(id);
+      await cargarCategoriasUI();
+    })
+  );
+}
+
+btnNuevaCategoria.addEventListener("click", () => abrirFormulario("categoria"));
+
+// ===============================
+// CRUD PRODUCTOS
+// ===============================
+const tablaProductos = document.getElementById("tabla-productos")!;
+const btnNuevoProducto = document.getElementById("btn-nuevo-producto")!;
+
+async function cargarProductosUI() {
+  tablaProductos.innerHTML = "";
+  const [productos, categorias] = await Promise.all([api.get("/productos"), obtenerCategorias()]);
+  const mapCat = new Map(categorias.map((c: any) => [c.id, c.nombre]));
+
+  productos.forEach((p: any) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${p.id}</td>
+      <td><img src="${p.imagen || "https://placehold.co/60x60"}" width="60" height="60" style="object-fit:cover;border-radius:8px"></td>
+      <td>${p.nombre ?? ""}</td>
+      <td>${p.descripcion ?? ""}</td>
+      <td>$${Number(p.precio ?? 0).toFixed(2)}</td>
+      <td>${p.stock ?? 0}</td>
+      <td>${mapCat.get(p.categoria?.id) || "Sin categoría"}</td>
+      <td>${p.disponible ? "✅" : "❌"}</td>
+      <td>
+        <button class="btn-edit editar" data-id="${p.id}" title="Editar">✏️</button>
+        <button class="btn-delete eliminar" data-id="${p.id}" title="Eliminar">🗑️</button>
+      </td>
+    `;
+    tablaProductos.appendChild(tr);
+  });
+
+  // Delegación de eventos
+  tablaProductos.querySelectorAll<HTMLButtonElement>("button.editar").forEach((b) =>
+    b.addEventListener("click", async () => {
+      const id = Number(b.dataset.id);
+      const prod = await api.get(`/productos/${id}`);
+      abrirFormulario("producto", prod);
+    })
+  );
+  tablaProductos.querySelectorAll<HTMLButtonElement>("button.eliminar").forEach((b) =>
+    b.addEventListener("click", async () => {
+      const id = Number(b.dataset.id);
+      if (!confirm("¿Eliminar producto?")) return;
+      await eliminarProducto(id);
+      await cargarProductosUI();
+    })
+  );
+}
+
+btnNuevoProducto.addEventListener("click", () => abrirFormulario("producto"));
+
+// ===============================
+// 🧾 Formularios dinámicos (Categorías / Productos)
+// ===============================
+function abrirFormulario(modo: "categoria" | "producto", datos: any = null) {
+  modoActual = modo;
+  idEditando = datos?.id ?? null;
+
+  // Título dinámico
+  formTitle.textContent = datos
+    ? `Editar ${modo === "categoria" ? "Categoría" : "Producto"}`
+    : `Nuevo ${modo === "categoria" ? "Categoría" : "Producto"}`;
+
+  // ===========================
+  // 📂 FORMULARIO CATEGORÍA
+  // ===========================
+  if (modo === "categoria") {
+    formContainer.innerHTML = `
+      <label>Nombre</label>
+      <input id="nombre" type="text" value="${datos?.nombre ?? ""}" placeholder="Ej: Hamburguesas" required>
+
+      <label>Descripción</label>
+      <textarea id="descripcion" rows="3" placeholder="Breve descripción...">${datos?.descripcion ?? ""}</textarea>
+
+      <label>URL de Imagen</label>
+      <input id="imagen" type="text" value="${datos?.imagen ?? ""}" placeholder="https://ejemplo.com/imagen.jpg">
+
+      <button type="submit" class="btn-green">${datos ? "Actualizar" : "Guardar"}</button>
+    `;
+  } 
+  // ===========================
+  // 🍔 FORMULARIO PRODUCTO
+  // ===========================
+  else {
+    formContainer.innerHTML = `<p style="margin:0 0 8px">Cargando categorías...</p>`;
+
+    (async () => {
+      try {
+        const categorias = (await obtenerCategorias()).filter((c: any) => !c.eliminado);
+        const opciones = categorias
           .map(
-            (c: any) => `
-              <option value="${c.id}" ${datos?.categoria?.id === c.id ? "selected" : ""}>
-                ${c.nombre}
-              </option>`
+            (c: any) =>
+              `<option value="${c.id}" ${datos?.categoria?.id === c.id ? "selected" : ""}>${c.nombre}</option>`
           )
           .join("");
 
         formContainer.innerHTML = `
           <label>Nombre</label>
-          <input id="nombre" type="text" value="${datos?.nombre ?? ""}" required>
+          <input id="nombre" type="text" value="${datos?.nombre ?? ""}" placeholder="Ej: Pizza Margarita" required>
+
           <label>Descripción</label>
-          <textarea id="descripcion" rows="3">${datos?.descripcion ?? ""}</textarea>
+          <textarea id="descripcion" rows="3" placeholder="Breve descripción del producto...">${datos?.descripcion ?? ""}</textarea>
+
           <label>Precio</label>
-          <input id="precio" type="number" step="0.01" min="0" value="${datos?.precio ?? ""}" required>
+          <input id="precio" type="number" step="0.01" min="0" value="${datos?.precio ?? 0}" required>
+
           <label>Stock</label>
           <input id="stock" type="number" min="0" value="${datos?.stock ?? 0}" required>
-          <label>Imagen (URL)</label>
-          <input id="imagen" type="text" value="${datos?.imagen ?? ""}">
+
           <label>Categoría</label>
           <select id="categoria" required>
-            <option value="">Seleccionar</option>
-            ${opcionesCategorias}
+            <option value="">Seleccionar categoría</option>
+            ${opciones}
           </select>
+
+          <label>URL de Imagen</label>
+          <input id="imagen" type="text" placeholder="https://ejemplo.com/imagen.jpg" value="${datos?.imagen ?? ""}">
+
           <label class="checkbox-label">
             <input id="disponible" type="checkbox" ${datos?.disponible ? "checked" : ""}>
             Producto disponible
           </label>
+
           <button type="submit" class="btn-green">${datos ? "Actualizar" : "Guardar"}</button>
         `;
       } catch (error) {
-        console.error("Error al cargar categorías:", error);
-        formContainer.innerHTML = `
-          <p style="color:red;">Error al cargar categorías. Intente nuevamente.</p>
-        `;
+        formContainer.innerHTML = `<p style="color:red;">Error al cargar categorías.</p>`;
       }
-    }
-    modal.classList.remove("hidden");
+    })();
   }
 
-  // ---------------------- CERRAR MODAL ----------------------
-  closeModal.addEventListener("click", () => {
-    modal.classList.add("hidden");
-    modoActual = null;
-    idEditando = null;
-  });
-
-  // ---------------------- SUBMIT DEL FORMULARIO ----------------------
-  formContainer.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    if (!modoActual) return;
-
-    const data =
-      modoActual === "categoria"
-        ? {
-            nombre: (document.getElementById("nombre") as HTMLInputElement).value.trim(),
-            descripcion: (document.getElementById("descripcion") as HTMLTextAreaElement).value.trim(),
-            imagen: (document.getElementById("imagen") as HTMLInputElement).value.trim(),
-            eliminado: false,
-          }
-        : {
-            nombre: (document.getElementById("nombre") as HTMLInputElement).value.trim(),
-            descripcion: (document.getElementById("descripcion") as HTMLTextAreaElement).value.trim(),
-            precio: parseFloat((document.getElementById("precio") as HTMLInputElement).value),
-            stock: parseInt((document.getElementById("stock") as HTMLInputElement).value),
-            imagen: (document.getElementById("imagen") as HTMLInputElement).value.trim(),
-            categoriaId: parseInt((document.getElementById("categoria") as HTMLSelectElement).value),
-            disponible: (document.getElementById("disponible") as HTMLInputElement).checked,
-            eliminado: false,
-          };
-
-    try {
-      if (modoActual === "categoria") {
-        idEditando ? await actualizarCategoria(idEditando, data) : await crearCategoria(data);
-        await cargarCategorias();
-      } else {
-        idEditando ? await actualizarProducto(idEditando, data) : await crearProducto(data);
-        await cargarProductos();
-      }
-
-      modal.classList.add("hidden");
-      idEditando = null;
-      modoActual = null;
-    } catch (error: any) {
-      console.error("Error al guardar:", error);
-      alert(error.message || "Ocurrió un error al guardar los datos.");
-    }
-  });
-
-  // ---------------------- FUNCIONES DE CARGA ----------------------
-  async function cargarCategorias() {
-    tablaCategorias.innerHTML = "";
-    try {
-      const categorias = await obtenerCategorias();
-      categorias
-        .filter((c: any) => !c.eliminado)
-        .forEach((c: any) => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${c.id ?? "-"}</td>
-            <td><img src="${c.imagen ?? 'https://via.placeholder.com/60'}" alt="${c.nombre ?? 'Sin nombre'}" width="60"></td>
-            <td>${c.nombre ?? "Sin nombre"}</td>
-            <td>${c.descripcion ?? "Sin descripción"}</td>
-            <td>
-              <button class="editar btn-edit" data-id="${c.id}">✏️</button>
-              <button class="eliminar btn-delete" data-id="${c.id}">🗑️</button>
-            </td>`;
-          tablaCategorias.appendChild(tr);
-        });
-      agregarEventosCategorias();
-    } catch (error) {
-      console.error("Error al cargar categorías:", error);
-      tablaCategorias.innerHTML = `<tr><td colspan="5" style="color:red;">Error al cargar categorías.</td></tr>`;
-    }
-  }
-
-  async function cargarProductos() {
-    tablaProductos.innerHTML = "";
-    try {
-      const [productos, categorias] = await Promise.all([obtenerProductos(), obtenerCategorias()]);
-      const categoriasMap = new Map(
-        categorias.filter((c: any) => !c.eliminado).map((c: any) => [c.id, c.nombre])
-      );
-      productos
-        .filter((p: any) => !p.eliminado)
-        .forEach((p: any) => {
-          const tr = document.createElement("tr");
-          const categoriaId = p.categoria?.id || p.categoriaId || p.categoria;
-          const categoriaNombre = categoriasMap.get(categoriaId) || "Sin categoría";
-          tr.innerHTML = `
-            <td>${p.id ?? "-"}</td>
-            <td><img src="${p.imagen || 'https://via.placeholder.com/60'}" alt="${p.nombre || 'Sin nombre'}" width="60"></td>
-            <td>${p.nombre || "Sin nombre"}</td>
-            <td>${p.descripcion || "Sin descripción"}</td>
-            <td>${p.precio ? `$${p.precio.toFixed(2)}` : "$0.00"}</td>
-            <td>${p.stock ?? 0}</td>
-            <td>${categoriaNombre}</td>
-            <td>${p.disponible ? "✅" : "❌"}</td>
-            <td>
-              <button class="editar btn-edit" data-id="${p.id}">✏️</button>
-              <button class="eliminar btn-delete" data-id="${p.id}">🗑️</button>
-            </td>`;
-          tablaProductos.appendChild(tr);
-        });
-      agregarEventosProductos();
-    } catch (error) {
-      console.error("Error al cargar productos:", error);
-      tablaProductos.innerHTML = `<tr><td colspan="9" style="color:red;">Error al cargar productos.</td></tr>`;
-    }
-  }
-
-  // ---------------------- EVENTOS ----------------------
-  function agregarEventosCategorias() {
-    document.querySelectorAll("#tabla-categorias .editar").forEach((btn) => {
-      btn.addEventListener("click", async (e) => {
-        const id = Number((e.currentTarget as HTMLElement).dataset.id);
-        const categoria = await obtenerCategoriaPorId(id);
-        abrirFormulario("categoria", categoria);
-      });
-    });
-    document.querySelectorAll("#tabla-categorias .eliminar").forEach((btn) => {
-      btn.addEventListener("click", async (e) => {
-        const id = Number((e.currentTarget as HTMLElement).dataset.id);
-        if (confirm("¿Eliminar categoría?")) {
-          await eliminarCategoria(id);
-          await cargarCategorias();
-        }
-      });
-    });
-  }
-
-  function agregarEventosProductos() {
-    document.querySelectorAll("#tabla-productos .editar").forEach((btn) => {
-      btn.addEventListener("click", async (e) => {
-        const id = Number((e.currentTarget as HTMLElement).dataset.id);
-        const producto = await obtenerProductoPorId(id);
-        abrirFormulario("producto", producto);
-      });
-    });
-    document.querySelectorAll("#tabla-productos .eliminar").forEach((btn) => {
-      btn.addEventListener("click", async (e) => {
-        const id = Number((e.currentTarget as HTMLElement).dataset.id);
-        if (confirm("¿Eliminar producto?")) {
-          await eliminarProducto(id);
-          await cargarProductos();
-        }
-      });
-    });
-  }
-
-  // ================================
-  // 🔁 ACTUALIZACIÓN AUTOMÁTICA
-  // ================================
-
-  async function actualizarTablasPeriodicamente() {
-    try {
-      await Promise.all([cargarCategorias(), cargarProductos()]);
-    } catch (err) {
-      console.error("Error al actualizar las tablas automáticamente:", err);
-    }
-  }
-
-  actualizarTablasPeriodicamente();        // primera carga inmediata
-  setInterval(actualizarTablasPeriodicamente, 60000); // luego cada 10s
+  // Mostrar modal
+  modal.classList.remove("hidden");
 }
 
+closeModalBtn.addEventListener("click", () => modal.classList.add("hidden"));
+
+formContainer.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!modoActual) return;
+
+  const getVal = (id: string) => (document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement).value.trim();
+
+  try {
+    if (modoActual === "categoria") {
+      const payload = {
+        nombre: getVal("nombre"),
+        descripcion: (document.getElementById("descripcion") as HTMLTextAreaElement).value.trim(),
+        imagen: getVal("imagen"),
+        eliminado: false,
+      };
+      if (idEditando) await actualizarCategoria(idEditando, payload);
+      else await crearCategoria(payload);
+      await cargarCategoriasUI();
+    } else {
+      const payload = {
+        nombre: getVal("nombre"),
+        descripcion: (document.getElementById("descripcion") as HTMLTextAreaElement).value.trim(),
+        precio: parseFloat(getVal("precio")),
+        stock: parseInt(getVal("stock")),
+        imagen: getVal("imagen"),
+        categoriaId: parseInt((document.getElementById("categoria") as HTMLSelectElement).value),
+        disponible: (document.getElementById("disponible") as HTMLInputElement).checked,
+        eliminado: false,
+      };
+      if (idEditando) await actualizarProducto(idEditando, payload);
+      else await crearProducto(payload);
+      await cargarProductosUI();
+    }
+    modal.classList.add("hidden");
+  } catch (err) {
+    console.error("Error guardando:", err);
+    alert("No se pudo guardar. Revisá la consola para más detalles.");
+  }
+});
+
+// ===============================
+// 🧱 PEDIDOS – Kanban real (API con detalles y usuario)
+// ===============================
+let pedidosCache: Pedido[] = [];
+
+async function fetchPedidos(): Promise<Pedido[]> {
+  try {
+    const pedidos = await api.get("/pedidos");
+    return Array.isArray(pedidos) ? pedidos : [];
+  } catch (err) {
+    console.error("Error al obtener pedidos:", err);
+    return [];
+  }
+}
+
+function limpiarColumnas() {
+  ESTADOS.forEach((e) => {
+    const col = document.getElementById(`col-${e.toLowerCase()}`);
+    if (col) col.innerHTML = "";
+  });
+}
+
+function actualizarBadges() {
+  const counts: Record<Estado, number> = {
+    PENDIENTE: 0,
+    PROCESADO: 0,
+    ENVIADO: 0,
+    ENTREGADO: 0,
+    CANCELADO: 0,
+  };
+  pedidosCache.forEach((p) => counts[p.estado]++);
+  for (const e of ESTADOS) {
+    const el = document.getElementById(`count-${e.toLowerCase()}`);
+    if (el) el.textContent = String(counts[e]);
+  }
+}
+
+function cardPedido(p: Pedido): HTMLElement {
+  const card = document.createElement("div");
+  card.className = `pedido-card ${p.estado.toLowerCase()}`;
+  card.setAttribute("draggable", "true");
+  card.dataset.id = String(p.id);
+  card.dataset.estado = p.estado;
+  card.innerHTML = `
+    <h4>Pedido #${p.id}</h4>
+    <p><b>Cliente:</b> ${p.cliente ?? "Sin nombre"}</p>
+    <p><b>Total:</b> ${fmtCurrency(p.total)}</p>
+    <p><b>Estado:</b> ${p.estado}</p>
+  `;
+  card.addEventListener("click", () => abrirModalPedido(p));
+  return card;
+}
+
+function renderPedidos(pedidos: Pedido[]) {
+  limpiarColumnas();
+  pedidos.forEach((p) => {
+    const col = document.getElementById(`col-${p.estado.toLowerCase()}`);
+    if (col) col.appendChild(cardPedido(p));
+  });
+  actualizarBadges();
+}
+
+async function recargarKanban() {
+  pedidosCache = await fetchPedidos();
+  renderPedidos(pedidosCache);
+}
+
+function inicializarDragAndDropPedidos() {
+  const lists = document.querySelectorAll<HTMLElement>(".kanban-list");
+  lists.forEach((list) => {
+    list.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      list.parentElement?.classList.add("drag-over");
+    });
+    list.addEventListener("dragleave", () => {
+      list.parentElement?.classList.remove("drag-over");
+    });
+    list.addEventListener("drop", async (e) => {
+      e.preventDefault();
+      list.parentElement?.classList.remove("drag-over");
+      const dragging = document.querySelector(".pedido-card.dragging") as HTMLElement | null;
+      if (!dragging) return;
+      const id = Number(dragging.dataset.id);
+      const nuevo = (list.dataset.estado as Estado) || "PENDIENTE";
+      await updatePedidoEstado(id, nuevo);
+    });
+  });
+  document.addEventListener("dragstart", (e) => {
+    const t = e.target as HTMLElement;
+    if (t.classList.contains("pedido-card")) t.classList.add("dragging");
+  });
+  document.addEventListener("dragend", (e) => {
+    const t = e.target as HTMLElement;
+    t.classList.remove("dragging");
+  });
+}
+
+async function updatePedidoEstado(id: number, estado: Estado) {
+  const p = pedidosCache.find((x) => x.id === id);
+  if (p) {
+    p.estado = estado;
+    renderPedidos(pedidosCache);
+  }
+  try {
+    await api.put(`/pedidos/${id}`, { estado });
+  } catch (err) {
+    console.warn("⚠️ No se pudo actualizar en backend:", err);
+    await recargarKanban();
+  }
+}
+
+// ===============================
+// 💬 MODAL DETALLE DE PEDIDO
+// ===============================
+async function abrirModalPedido(pedido: Pedido) {
+  const modal = document.getElementById("pedido-modal")!;
+  const pill = document.getElementById("pedido-status-pill")!;
+  const title = document.getElementById("pedido-title")!;
+  const idEl = document.getElementById("pedido-id")!;
+  const cliente = document.getElementById("pedido-cliente")!;
+  const fecha = document.getElementById("pedido-fecha")!;
+  const telefono = document.getElementById("pedido-telefono")!;
+  const direccion = document.getElementById("pedido-direccion")!;
+  const pago = document.getElementById("pedido-pago")!;
+  const tbody = document.getElementById("pedido-items")!;
+  const sub = document.getElementById("pedido-subtotal")!;
+  const env = document.getElementById("pedido-envio")!;
+  const tot = document.getElementById("pedido-total")!;
+  const select = document.getElementById("estado-select") as HTMLSelectElement;
+  const btnGuardar = document.getElementById("btn-guardar-estado")!;
+
+  // ============= Cabecera =============
+  title.textContent = `Detalle del Pedido #${pedido.id}`;
+  idEl.textContent = `#${pedido.id}`;
+  pill.textContent = pedido.estado;
+  pill.className = `status-pill ${pedido.estado.toLowerCase()}`;
+
+  // Buscar cliente por usuario_id si no vino en el pedido
+  try {
+    if (!pedido.cliente && (pedido as any).usuario_id) {
+      const user = await api.get(`/usuarios/${(pedido as any).usuario_id}`);
+      pedido.cliente = user.nombre ?? "Sin nombre";
+    }
+  } catch {
+    pedido.cliente = "Sin nombre";
+  }
+
+  cliente.textContent = pedido.cliente ?? "Sin nombre";
+  fecha.textContent = pedido.fecha ?? "-";
+  telefono.textContent = pedido.telefono ?? "-";
+  direccion.textContent = pedido.direccion ?? "-";
+  pago.textContent = pedido.metodoPago ?? "-";
+
+  // ============= Productos =============
+  tbody.innerHTML = `<tr><td colspan="4">Cargando productos...</td></tr>`;
+  try {
+    // GET /api/detalles?pedidoId={id}
+    const detalles = await api.get(`/detalles?pedidoId=${pedido.id}`);
+    const productos: PedidoItem[] = Array.isArray(detalles)
+      ? detalles.map((d: any) => ({
+          nombre: d.producto?.nombre ?? "Producto",
+          cantidad: d.cantidad ?? 1,
+          precio: Number(d.producto?.precio ?? d.subtotal ?? 0),
+        }))
+      : [];
+
+    tbody.innerHTML = "";
+    let subtotal = 0;
+    if (productos.length === 0) {
+      tbody.innerHTML = `<tr class="empty-row"><td colspan="4">Sin productos</td></tr>`;
+    } else {
+      productos.forEach((pr) => {
+        const linea = pr.cantidad * pr.precio;
+        subtotal += linea;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${pr.nombre}</td>
+          <td>${pr.cantidad}</td>
+          <td>${fmtCurrency(pr.precio)}</td>
+          <td>${fmtCurrency(linea)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+    sub.textContent = fmtCurrency(subtotal);
+    env.textContent = fmtCurrency(pedido.envio ?? 0);
+    tot.textContent = fmtCurrency(pedido.total ?? subtotal);
+  } catch (err) {
+    console.error("Error al obtener detalles del pedido:", err);
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="4">Error al cargar productos</td></tr>`;
+  }
+
+  // ============= Estado editable =============
+  select.value = pedido.estado;
+  select.onchange = () => {
+    const nuevo = select.value as Estado;
+    pill.textContent = nuevo;
+    pill.className = `status-pill ${nuevo.toLowerCase()}`;
+  };
+
+  btnGuardar.onclick = async () => {
+    const nuevo = select.value as Estado;
+    await updatePedidoEstado(pedido.id, nuevo);
+    modal.classList.add("hidden");
+  };
+
+  document.getElementById("close-pedido-modal")?.addEventListener(
+    "click",
+    () => modal.classList.add("hidden"),
+    { once: true }
+  );
+
+  modal.classList.remove("hidden");
+}
+
+// ===============================
+// 🚀 Bootstrap Pedidos
+// ===============================
+function inicializarPedidosKanban() {
+  (document.getElementById("col-pendiente") as HTMLElement)?.setAttribute("data-estado", "PENDIENTE");
+  (document.getElementById("col-procesado") as HTMLElement)?.setAttribute("data-estado", "PROCESADO");
+  (document.getElementById("col-enviado") as HTMLElement)?.setAttribute("data-estado", "ENVIADO");
+  (document.getElementById("col-entregado") as HTMLElement)?.setAttribute("data-estado", "ENTREGADO");
+  (document.getElementById("col-cancelado") as HTMLElement)?.setAttribute("data-estado", "CANCELADO");
+
+  inicializarDragAndDropPedidos();
+  recargarKanban();
+}

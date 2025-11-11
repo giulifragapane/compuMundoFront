@@ -5,21 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Food Store — Panel Admin</title>
     <link rel="stylesheet" href="./adminHome.css" />
-    <!-- <script
-      src="https://kit.fontawesome.com/a2e0b0a4e4.js"
-      crossorigin="anonymous"
-    ></script> -->
+
+    <!-- 🔹 Librería de íconos Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
   </head>
 
   <body>
-    <!-- Barra superior -->
+    <!-- ================== HEADER ================== -->
     <header class="topbar">
       <div class="brand-left">
-        <a href="#" class="brand"><!--<i class="fa-solid fa-pizza-slice"></i>--> Food Store</a>
+        <a href="#" class="brand">
+          <i class="fa-solid fa-pizza-slice"></i> Food Store
+        </a>
       </div>
       <div class="topbar-right">
         <nav class="nav-links">
-          <a href="/src/pages/store/home/home.html">Tienda</a>
+          <a href="/src/pages/store/home/storeHome.html">Tienda</a>
           <a href="#" class="active">Panel Admin</a>
           <span id="user-name" class="user-name"></span>
         </nav>
@@ -27,61 +31,67 @@
       </div>
     </header>
 
+    <!-- ================== CONTENEDOR PRINCIPAL ================== -->
     <div class="container">
-      <!-- Sidebar -->
+      <!-- SIDEBAR -->
       <aside class="sidebar">
         <h3>Administración</h3>
         <p class="subtitle">Panel de control</p>
         <nav class="menu">
-          <a href="#" class="active"><!--<i class="fa-solid fa-chart-line"></i>--> Dashboard</a>
-          <a href="#" id="menu-categorias"><!--<i class="fa-solid fa-folder"></i>-->Categorías</a>
-          <a href="#" id="menu-productos"><!--<i class="fa-solid fa-burger"></i>--> Productos</a>
-          <a href="#" id="menu-pedidos"><!--<i class="fa-solid fa-box"></i>--> Pedidos</a>
-          <a href="/src/pages/store/home/storeHome.html"><!--<i class="fa-solid fa-store"></i>--> Ver Tienda</a>
+          <a href="#" class="active">
+            <i class="fa-solid fa-chart-line"></i> Dashboard
+          </a>
+          <a href="#" id="menu-categorias">
+            <i class="fa-solid fa-folder-open"></i> Categorías
+          </a>
+          <a href="#" id="menu-productos">
+            <i class="fa-solid fa-burger"></i> Productos
+          </a>
+          <a href="#" id="menu-pedidos">
+            <i class="fa-solid fa-box"></i> Pedidos
+          </a>
+          <a href="/src/pages/store/home/storeHome.html">
+            <i class="fa-solid fa-store"></i> Ver Tienda
+          </a>
         </nav>
       </aside>
 
-      <!-- Contenido principal -->
-      <main class="main">
-        <!-- Dashboard -->
+      <!-- ================== CONTENIDO PRINCIPAL ================== -->
+      <main class="main-content">
+        <!-- ========== SECCIÓN DASHBOARD ========= -->
         <section id="dashboard-section" class="section active">
-          <h2>Panel de Administración</h2>
-          <div class="cards">
-            <div class="card gradient-purple">
-              <h4><!--<i class="fa-solid fa-folder"></i>--> Categorías</h4>
-              <p class="value" id="count-categorias">0</p>
-              <button id="btn-gestionar-categorias">Gestionar</button>
+          <h2>Dashboard</h2>
+          <p class="subtitle">Resumen rápido del sistema</p>
+
+          <div class="stats-grid">
+            <!-- Tarjeta Categorías -->
+            <div class="card stat-card">
+              <h3>Categorías</h3>
+              <p id="count-categorias">0</p>
+              <button id="btn-categorias" class="btn-manage">Gestionar</button>
             </div>
-            <div class="card gradient-pink">
-              <h4><!--<i class="fa-solid fa-burger"></i>--> Productos</h4>
-              <p class="value" id="count-productos">0</p>
-              <button id="btn-gestionar-productos">Gestionar</button>
+
+            <!-- Tarjeta Productos -->
+            <div class="card stat-card">
+              <h3>Productos</h3>
+              <p id="count-productos">0</p>
+              <button id="btn-productos" class="btn-manage">Gestionar</button>
             </div>
-            <div class="card gradient-blue">
-              <h4><!--<i class="fa-solid fa-box"></i>--> Pedidos</h4>
-              <p class="value" id="count-pedidos">0</p>
-              <button>Gestionar</button>
-            </div>
-            <div class="card gradient-green">
-              <h4><!--<i class="fa-solid fa-check"></i>--> Disponibles</h4>
-              <p class="value" id="count-activos">0</p>
-              <span class="info">Productos activos</span>
+
+            <!-- Tarjeta Pedidos -->
+            <div class="card stat-card">
+              <h3>Pedidos</h3>
+              <p id="count-pedidos">0</p>
+              <button id="btn-pedidos" class="btn-manage">Gestionar</button>
             </div>
           </div>
-
-          <section class="resume">
-            <h4><!--<i class="fa-solid fa-chart-column"></i>--> Resumen Rápido</h4>
-            <p>Cargando estadísticas...</p>
-          </section>
         </section>
 
-        <!-- Categorías -->
+        <!-- ========== SECCIÓN CATEGORÍAS ========= -->
         <section id="categorias-section" class="section">
           <div class="header-section">
             <h2>Gestión de Categorías</h2>
-            <button id="btn-nueva-categoria" class="btn-green">
-              <!--<i class="fa-solid fa-plus"></i>--> Nueva Categoría
-            </button>
+            <button id="btn-nueva-categoria" class="btn-green">Nueva Categoría</button>
           </div>
 
           <table class="data-table">
@@ -98,13 +108,11 @@
           </table>
         </section>
 
-        <!-- Productos -->
+        <!-- ========== SECCIÓN PRODUCTOS ========= -->
         <section id="productos-section" class="section">
           <div class="header-section">
             <h2>Gestión de Productos</h2>
-            <button id="btn-nuevo-producto" class="btn-green">
-              <!--<i class="fa-solid fa-plus"></i>--> Nuevo Producto
-            </button>
+            <button id="btn-nuevo-producto" class="btn-green">Nuevo Producto</button>
           </div>
 
           <table class="data-table">
@@ -124,14 +132,174 @@
             <tbody id="tabla-productos"></tbody>
           </table>
         </section>
+        <!-- ========== SECCIÓN PEDIDOS (ADMIN) ========= -->
+<section id="pedidos-section" class="section ">
+  <div class="orders-header">
+    <h2>Gestión de Pedidos</h2>
 
-        <!-- Pedidos -->
-        <section id="pedidos-section" class="section">
-          <h2>Gestión de Pedidos</h2>
-          <p>Listado de pedidos realizados por los clientes.</p>
-        </section>
+    <!-- Leyenda rápida por estado -->
+    <div class="orders-legend">
+      <span class="chip st-pendiente">Pendiente</span>
+      <span class="chip st-procesado">Procesado</span>
+      <span class="chip st-enviado">Enviado</span>
+      <span class="chip st-entregado">Entregado</span>
+      <span class="chip st-cancelado">Cancelado</span>
+    </div>
+  </div>
 
-        <!-- Formulario dinámico -->
+  <p class="legend-help">Arrastrá los pedidos entre columnas para cambiar su estado.</p>
+
+  <!-- Tablero Kanban -->
+  <div class="kanban-container">
+    <!-- Pendiente -->
+    <div class="kanban-column st-pendiente">
+      <div class="kanban-colhead">
+        <div class="col-title">
+          <i class="fa-solid fa-hourglass-half"></i>
+          Pendientes
+        </div>
+        <span class="badge-count" id="count-pendiente">0</span>
+      </div>
+      <div class="kanban-list" id="col-pendiente" data-estado="PENDIENTE"></div>
+    </div>
+
+    <!-- Procesado -->
+    <div class="kanban-column st-procesado">
+      <div class="kanban-colhead">
+        <div class="col-title">
+          <i class="fa-solid fa-clipboard-check"></i>
+          Procesados
+        </div>
+        <span class="badge-count" id="count-procesado">0</span>
+      </div>
+      <div class="kanban-list" id="col-procesado" data-estado="PROCESADO"></div>
+    </div>
+
+    <!-- Enviado -->
+    <div class="kanban-column st-enviado">
+      <div class="kanban-colhead">
+        <div class="col-title">
+          <i class="fa-solid fa-truck"></i>
+          Enviados
+        </div>
+        <span class="badge-count" id="count-enviado">0</span>
+      </div>
+      <div class="kanban-list" id="col-enviado" data-estado="ENVIADO"></div>
+    </div>
+
+    <!-- Entregado -->
+    <div class="kanban-column st-entregado">
+      <div class="kanban-colhead">
+        <div class="col-title">
+          <i class="fa-solid fa-box-open"></i>
+          Entregados
+        </div>
+        <span class="badge-count" id="count-entregado">0</span>
+      </div>
+      <div class="kanban-list" id="col-entregado" data-estado="ENTREGADO"></div>
+    </div>
+
+    <!-- Cancelado -->
+    <div class="kanban-column st-cancelado">
+      <div class="kanban-colhead">
+        <div class="col-title">
+          <i class="fa-solid fa-ban"></i>
+          Cancelados
+        </div>
+        <span class="badge-count" id="count-cancelado">0</span>
+      </div>
+      <div class="kanban-list" id="col-cancelado" data-estado="CANCELADO"></div>
+    </div>
+  </div>
+
+  <!-- Modal Detalle Pedido (mejorado) -->
+  <div id="pedido-modal" class="modal hidden">
+    <div class="modal-content order-modal">
+      <button id="close-pedido-modal" class="order-close" aria-label="Cerrar">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="order-header">
+        <div>
+          <h3 id="pedido-title">Detalle del Pedido</h3>
+          <span id="pedido-status-pill" class="status-pill">-</span>
+        </div>
+        <div class="order-id" id="pedido-id"></div>
+      </div>
+
+      <div class="order-meta">
+        <div>
+          <span class="meta-label">Cliente</span>
+          <span class="meta-value" id="pedido-cliente">-</span>
+        </div>
+        <div>
+          <span class="meta-label">Fecha</span>
+          <span class="meta-value" id="pedido-fecha">-</span>
+        </div>
+        <div>
+          <span class="meta-label">Teléfono</span>
+          <span class="meta-value" id="pedido-telefono">-</span>
+        </div>
+        <div>
+          <span class="meta-label">Método de pago</span>
+          <span class="meta-value" id="pedido-pago">-</span>
+        </div>
+        <div class="meta-span-2">
+          <span class="meta-label">Dirección</span>
+          <span class="meta-value" id="pedido-direccion">-</span>
+        </div>
+      </div>
+
+      <div class="order-items">
+        <h4>Productos</h4>
+        <table class="order-table">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Cant.</th>
+              <th>Precio</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+          <tbody id="pedido-items">
+            <tr class="empty-row"><td colspan="4">Sin productos</td></tr>
+          </tbody>
+        </table>
+
+        <div class="order-totals">
+          <div class="row">
+            <span>Subtotal</span>
+            <span id="pedido-subtotal">$0,00</span>
+          </div>
+          <div class="row">
+            <span>Envío</span>
+            <span id="pedido-envio">$0,00</span>
+          </div>
+          <div class="row total">
+            <span>Total</span>
+            <span id="pedido-total">$0,00</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="order-footer">
+        <label for="estado-select">Cambiar Estado:</label>
+        <select id="estado-select" class="estado-select">
+          <option value="PENDIENTE">Pendiente</option>
+          <option value="PROCESADO">Procesado</option>
+          <option value="ENVIADO">Enviado</option>
+          <option value="ENTREGADO">Entregado</option>
+          <option value="CANCELADO">Cancelado</option>
+        </select>
+        <button id="btn-guardar-estado" class="btn-green">Actualizar Estado</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+  
+        <!-- ========== FORMULARIO DINÁMICO ========= -->
         <div id="form-modal" class="modal hidden">
           <div class="modal-content">
             <span id="close-modal" class="close-btn">&times;</span>
@@ -145,4 +313,3 @@
     <script type="module" src="./adminHome.ts"></script>
   </body>
 </html>
-

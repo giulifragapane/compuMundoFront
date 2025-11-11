@@ -37,14 +37,9 @@ async function inicializarDetalleProducto() {
   const userNameSpan = document.getElementById("user-name");
   const storedUser = localStorage.getItem("username");
   const storedRole = localStorage.getItem("role");
-
   if (userNameSpan) {
-    if (storedUser) {
-      userNameSpan.textContent = storedUser;
-    } else {
-      userNameSpan.textContent =
-        storedRole?.toUpperCase() === "ADMIN" ? "Administrador" : "Usuario";
-    }
+    userNameSpan.textContent =
+      storedUser || (storedRole?.toUpperCase() === "ADMIN" ? "Administrador" : "Usuario");
   }
 
   // ---------------------- UTILIDADES ----------------------
