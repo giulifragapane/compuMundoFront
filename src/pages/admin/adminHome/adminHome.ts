@@ -23,7 +23,7 @@ import {
 // ===============================
 // Tipos
 // ===============================
-type Estado = "PENDIENTE" | "PROCESADO" | "ENVIADO" | "ENTREGADO" | "CANCELADO";
+type Estado = "PENDIENTE" | "CONFIRMADO" | "TERMINADO" | "CANCELADO";
 
 interface PedidoItem {
   nombre: string;
@@ -44,7 +44,7 @@ interface Pedido {
   productos?: PedidoItem[]; // si viene expandido
 }
 
-const ESTADOS: Estado[] = ["PENDIENTE", "PROCESADO", "ENVIADO", "ENTREGADO", "CANCELADO"];
+const ESTADOS: Estado[] = ["PENDIENTE", "CONFIRMADO", "TERMINADO", "CANCELADO"];
 
 // Util
 const fmtCurrency = (n: number | undefined | null) =>
@@ -462,17 +462,21 @@ function limpiarColumnas() {
 function actualizarBadges() {
   const counts: Record<Estado, number> = {
     PENDIENTE: 0,
-    PROCESADO: 0,
-    ENVIADO: 0,
-    ENTREGADO: 0,
+    CONFIRMADO: 0,
+    TERMINADO: 0,
     CANCELADO: 0,
   };
-  pedidosCache.forEach((p) => counts[p.estado]++);
+
+  pedidosCache.forEach((p) => {
+    if (counts[p.estado] !== undefined) counts[p.estado]++;
+  });
+
   for (const e of ESTADOS) {
     const el = document.getElementById(`count-${e.toLowerCase()}`);
     if (el) el.textContent = String(counts[e]);
   }
 }
+
 
 function cardPedido(p: Pedido): HTMLElement {
   const card = document.createElement("div");
@@ -657,9 +661,8 @@ async function abrirModalPedido(pedido: Pedido) {
 // ===============================
 function inicializarPedidosKanban() {
   (document.getElementById("col-pendiente") as HTMLElement)?.setAttribute("data-estado", "PENDIENTE");
-  (document.getElementById("col-procesado") as HTMLElement)?.setAttribute("data-estado", "PROCESADO");
-  (document.getElementById("col-enviado") as HTMLElement)?.setAttribute("data-estado", "ENVIADO");
-  (document.getElementById("col-entregado") as HTMLElement)?.setAttribute("data-estado", "ENTREGADO");
+  (document.getElementById("col-confirmado") as HTMLElement)?.setAttribute("data-estado", "CONFIRMADO");
+  (document.getElementById("col-terminado") as HTMLElement)?.setAttribute("data-estado", "TERMINADO");
   (document.getElementById("col-cancelado") as HTMLElement)?.setAttribute("data-estado", "CANCELADO");
 
   inicializarDragAndDropPedidos();

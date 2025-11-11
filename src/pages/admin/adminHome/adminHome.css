@@ -18,12 +18,14 @@
   --gradient-blue:linear-gradient(135deg,#0072ff,#4098ff);
   --gradient-green:linear-gradient(135deg,#0fb56d,#2ed47a);
 
-  /* Colores de estados (Pedidos) */
-  --st-pendiente:#f6c23e;
-  --st-procesado:#60a5fa;
-  --st-enviado:#a78bfa;
-  --st-entregado:#2ed573;
-  --st-cancelado:#ff7675;
+/* =============================
+   🎨 ESTADOS DE PEDIDOS (colores)
+============================= */
+:root {
+  --st-pendiente: #f6c23e;   /* Amarillo */
+  --st-confirmado: #60a5fa;  /* Azul */
+  --st-terminado: #2ed573;   /* Verde */
+  --st-cancelado: #ff7675;   /* Rojo */
 }
 
 /* =============================
@@ -164,111 +166,196 @@ body{
 }
 
 /* =============================
-   📦 PEDIDOS (Kanban + leyenda + modal)
+   📦 PEDIDOS KaNBAN
 ============================= */
-.orders-header{display:flex;align-items:center;justify-content:space-between;gap:1rem}
-.orders-legend{display:flex;flex-wrap:wrap;gap:.4rem}
-.chip{
-  display:inline-flex;align-items:center;gap:.4rem;
-  padding:.25rem .6rem;border-radius:999px;font-size:.8rem;font-weight:700;color:#fff;
-}
-.chip.st-pendiente{background:var(--st-pendiente)}
-.chip.st-procesado{background:var(--st-procesado)}
-.chip.st-enviado{background:var(--st-enviado)}
-.chip.st-entregado{background:var(--st-entregado)}
-.chip.st-cancelado{background:var(--st-cancelado)}
-.legend-help{margin:.2rem 0 1rem;color:var(--gray);font-size:.9rem}
-
-/* Kanban */
-.kanban-container{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-  gap:18px;margin-top:12px;
-}
-.kanban-column{
-  background:var(--white);border-radius:12px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,.08);
-  display:flex;flex-direction:column;
-}
-.kanban-colhead{
-  display:flex;justify-content:space-between;align-items:center;
-  color:#fff;border-radius:8px;padding:.55rem .8rem;margin-bottom:10px;font-weight:800
-}
-.st-pendiente .kanban-colhead{background:var(--st-pendiente)}
-.st-procesado .kanban-colhead{background:var(--st-procesado)}
-.st-enviado .kanban-colhead{background:var(--st-enviado)}
-.st-entregado .kanban-colhead{background:var(--st-entregado)}
-.st-cancelado .kanban-colhead{background:var(--st-cancelado)}
-.col-title{display:flex;align-items:center;gap:.5rem}
-.badge-count{
-  background:rgba(255,255,255,.28);padding:2px 8px;border-radius:8px;font-size:.8rem;font-weight:800
-}
-.kanban-list{
-  background:#f9fafb;border-radius:8px;padding:10px;min-height:240px;flex:1;overflow:auto
+.orders-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
-/* Tarjetas de pedido */
-.pedido-card{
-  background:#fff;border:1px solid var(--border);border-left:6px solid var(--primary);
-  border-radius:8px;padding:12px;margin-bottom:10px;cursor:grab;transition:transform .2s ease,background .2s ease;
-}
-.pedido-card:hover{transform:scale(1.02);background:rgba(255,107,53,.06)}
-.pedido-card h4{margin:0 0 4px;font-size:15px}
-.pedido-card p{margin:2px 0;font-size:13px;color:var(--gray)}
-.pedido-card.pendiente{border-left-color:var(--st-pendiente)}
-.pedido-card.procesado{border-left-color:var(--st-procesado)}
-.pedido-card.enviado{border-left-color:var(--st-enviado)}
-.pedido-card.entregado{border-left-color:var(--st-entregado)}
-.pedido-card.cancelado{border-left-color:var(--st-cancelado)}
-.drag-over{background:rgba(255,107,53,.08)}
-
-/* Modal pedido (usa .modal y .modal-content existentes) */
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:999}
-.hidden{display:none!important}
-.modal-content{
-  background:#fff;border-radius:14px;padding:2rem;width:min(860px,92vw);
-  box-shadow:0 5px 20px rgba(0,0,0,.25);position:relative;animation:fadeIn .25s ease;
-}
-.order-close{
-  position:absolute;right:14px;top:12px;background:transparent;border:0;color:var(--gray);
-  font-size:1.25rem;cursor:pointer
-}
-.order-close:hover{color:var(--text-dark)}
-.order-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
-.order-id{font-weight:800;color:var(--gray)}
-.status-pill{
-  display:inline-block;padding:.25rem .75rem;border-radius:999px;color:#fff;font-weight:800;font-size:.8rem
-}
-.status-pill.pendiente{background:var(--st-pendiente)}
-.status-pill.procesado{background:var(--st-procesado)}
-.status-pill.enviado{background:var(--st-enviado)}
-.status-pill.entregado{background:var(--st-entregado)}
-.status-pill.cancelado{background:var(--st-cancelado)}
-
-.order-meta{
-  display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem;margin-bottom:1rem
-}
-.order-meta .meta-label{font-size:.8rem;color:var(--gray)}
-.order-meta .meta-value{font-weight:700}
-.order-meta .meta-span-2{grid-column:span 2}
-
-.order-items h4{margin:.2rem 0 .6rem}
-.order-table{width:100%;border-collapse:collapse}
-.order-table th,.order-table td{
-  padding:.55rem .7rem;border-bottom:1px solid var(--border);text-align:left
-}
-.order-table thead{background:#f3f4f6}
-.order-table .empty-row td{text-align:center;color:var(--gray)}
-
-.order-totals{margin-top:.8rem;border-top:1px solid var(--border);padding-top:.6rem}
-.order-totals .row{display:flex;justify-content:space-between;margin:.2rem 0}
-.order-totals .total{font-weight:900;font-size:1.05rem;color:var(--primary-dark)}
-
-.order-footer{
-  margin-top:1rem;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;justify-content:flex-end
-}
-.estado-select{
-  padding:.45rem .6rem;border-radius:8px;border:1px solid var(--border);background:#fff;
+.orders-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
 }
 
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* 🎨 Chips de leyenda */
+.chip.st-pendiente { background: var(--st-pendiente); }
+.chip.st-confirmado { background: var(--st-confirmado); }
+.chip.st-terminado { background: var(--st-terminado); }
+.chip.st-cancelado { background: var(--st-cancelado); }
+
+.legend-help {
+  margin: 0.2rem 0 1rem;
+  color: var(--gray);
+  font-size: 0.9rem;
+}
+
+/* 🧱 Kanban */
+.kanban-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+  margin-top: 12px;
+}
+
+.kanban-column {
+  background: var(--white);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+}
+
+.kanban-colhead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.55rem 0.8rem;
+  margin-bottom: 10px;
+  font-weight: 800;
+}
+
+/* 🎨 Colores de columnas */
+.st-pendiente .kanban-colhead { background: var(--st-pendiente); }
+.st-confirmado .kanban-colhead { background: var(--st-confirmado); }
+.st-terminado .kanban-colhead { background: var(--st-terminado); }
+.st-cancelado .kanban-colhead { background: var(--st-cancelado); }
+
+.col-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.badge-count {
+  background: rgba(255, 255, 255, 0.28);
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.kanban-list {
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 10px;
+  min-height: 240px;
+  flex: 1;
+  overflow: auto;
+}
+
+/* 🧾 Tarjetas de pedido */
+.pedido-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-left: 6px solid var(--primary);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+  cursor: grab;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.pedido-card:hover {
+  transform: scale(1.02);
+  background: rgba(255, 107, 53, 0.06);
+}
+
+.pedido-card h4 {
+  margin: 0 0 4px;
+  font-size: 15px;
+}
+
+.pedido-card p {
+  margin: 2px 0;
+  font-size: 13px;
+  color: var(--gray);
+}
+
+/* 🎨 Colores de borde lateral por estado */
+.pedido-card.pendiente { border-left-color: var(--st-pendiente); }
+.pedido-card.confirmado { border-left-color: var(--st-confirmado); }
+.pedido-card.terminado { border-left-color: var(--st-terminado); }
+.pedido-card.cancelado { border-left-color: var(--st-cancelado); }
+
+.drag-over { background: rgba(255, 107, 53, 0.08); }
+
+/* 🪟 Modal pedido */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.hidden { display: none !important; }
+
+.modal-content {
+  background: #fff;
+  border-radius: 14px;
+  padding: 2rem;
+  width: min(860px, 92vw);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.25);
+  position: relative;
+  animation: fadeIn 0.25s ease;
+}
+
+.order-close {
+  position: absolute;
+  right: 14px;
+  top: 12px;
+  background: transparent;
+  border: 0;
+  color: var(--gray);
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+.order-close:hover { color: var(--text-dark); }
+
+.order-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.order-id { font-weight: 800; color: var(--gray); }
+
+/* 🔵 Estado visual */
+.status-pill {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.8rem;
+}
+
+.status-pill.pendiente  { background: var(--st-pendiente); }
+.status-pill.confirmado { background: var(--st-confirmado); }
+.status-pill.terminado  { background: var(--st-terminado); }
+.status-pill.cancelado  { background: var(--st-cancelado); }
+}
 /* ============================= */
 /* 🔧 FORMULARIO MODAL (CATEGORÍA / PRODUCTO) */
 /* ============================= */

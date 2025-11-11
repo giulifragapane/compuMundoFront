@@ -151,66 +151,41 @@
 
   <!-- Tablero Kanban -->
   <div class="kanban-container">
-    <!-- Pendiente -->
-    <div class="kanban-column st-pendiente">
-      <div class="kanban-colhead">
-        <div class="col-title">
-          <i class="fa-solid fa-hourglass-half"></i>
-          Pendientes
-        </div>
-        <span class="badge-count" id="count-pendiente">0</span>
-      </div>
-      <div class="kanban-list" id="col-pendiente" data-estado="PENDIENTE"></div>
-    </div>
-
-    <!-- Procesado -->
-    <div class="kanban-column st-procesado">
-      <div class="kanban-colhead">
-        <div class="col-title">
-          <i class="fa-solid fa-clipboard-check"></i>
-          Procesados
-        </div>
-        <span class="badge-count" id="count-procesado">0</span>
-      </div>
-      <div class="kanban-list" id="col-procesado" data-estado="PROCESADO"></div>
-    </div>
-
-    <!-- Enviado -->
-    <div class="kanban-column st-enviado">
-      <div class="kanban-colhead">
-        <div class="col-title">
-          <i class="fa-solid fa-truck"></i>
-          Enviados
-        </div>
-        <span class="badge-count" id="count-enviado">0</span>
-      </div>
-      <div class="kanban-list" id="col-enviado" data-estado="ENVIADO"></div>
-    </div>
-
-    <!-- Entregado -->
-    <div class="kanban-column st-entregado">
-      <div class="kanban-colhead">
-        <div class="col-title">
-          <i class="fa-solid fa-box-open"></i>
-          Entregados
-        </div>
-        <span class="badge-count" id="count-entregado">0</span>
-      </div>
-      <div class="kanban-list" id="col-entregado" data-estado="ENTREGADO"></div>
-    </div>
-
-    <!-- Cancelado -->
-    <div class="kanban-column st-cancelado">
-      <div class="kanban-colhead">
-        <div class="col-title">
-          <i class="fa-solid fa-ban"></i>
-          Cancelados
-        </div>
-        <span class="badge-count" id="count-cancelado">0</span>
-      </div>
-      <div class="kanban-list" id="col-cancelado" data-estado="CANCELADO"></div>
-    </div>
+   <!-- Pendiente -->
+<div class="kanban-column st-pendiente">
+  <div class="kanban-colhead">
+    <div class="col-title"><i class="fa-solid fa-hourglass-start"></i>Pendiente</div>
+    <span class="badge-count" id="count-pendiente">0</span>
   </div>
+  <div class="kanban-list" id="col-pendiente" data-estado="PENDIENTE"></div>
+</div>
+
+<!-- Confirmado -->
+<div class="kanban-column st-confirmado">
+  <div class="kanban-colhead">
+    <div class="col-title"><i class="fa-solid fa-clipboard-check"></i>Confirmado</div>
+    <span class="badge-count" id="count-confirmado">0</span>
+  </div>
+  <div class="kanban-list" id="col-confirmado" data-estado="CONFIRMADO"></div>
+</div>
+
+<!-- Terminado -->
+<div class="kanban-column st-terminado">
+  <div class="kanban-colhead">
+    <div class="col-title"><i class="fa-solid fa-box-open"></i>Terminado</div>
+    <span class="badge-count" id="count-terminado">0</span>
+  </div>
+  <div class="kanban-list" id="col-terminado" data-estado="TERMINADO"></div>
+</div>
+
+<!-- Cancelado -->
+<div class="kanban-column st-cancelado">
+  <div class="kanban-colhead">
+    <div class="col-title"><i class="fa-solid fa-xmark"></i>Cancelado</div>
+    <span class="badge-count" id="count-cancelado">0</span>
+  </div>
+  <div class="kanban-list" id="col-cancelado" data-estado="CANCELADO"></div>
+</div>
 
   <!-- Modal Detalle Pedido (mejorado) -->
   <div id="pedido-modal" class="modal hidden">
