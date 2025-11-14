@@ -1,7 +1,7 @@
 /* =============================
    🎨 VARIABLES GLOBALES
 ============================= */
-:root{
+:root {
   --primary:#ff6b35;
   --primary-dark:#e85a2a;
   --bg-light:#f7f7f7;
@@ -18,10 +18,9 @@
   --gradient-blue:linear-gradient(135deg,#0072ff,#4098ff);
   --gradient-green:linear-gradient(135deg,#0fb56d,#2ed47a);
 
-/* =============================
-   🎨 ESTADOS DE PEDIDOS (colores)
-============================= */
-:root {
+  /* =============================
+     🎨 ESTADOS DE PEDIDOS (colores)
+  ============================= */
   --st-pendiente: #f6c23e;   /* Amarillo */
   --st-confirmado: #60a5fa;  /* Azul */
   --st-terminado: #2ed573;   /* Verde */
@@ -31,475 +30,335 @@
 /* =============================
    🧱 BASE
 ============================= */
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0;
-  font-family:"Poppins",sans-serif;
-  background:var(--bg-light);
-  color:var(--text-dark);
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  background: var(--bg-light);
+  color: var(--text-dark);
 }
 
 /* =============================
    🔝 HEADER / TOPBAR
 ============================= */
-.topbar{
-  position:sticky;top:0;z-index:10;
-  display:flex;justify-content:space-between;align-items:center;
-  gap:1rem;
-  background:var(--white);
-  padding:12px 30px;
-  border-bottom:1px solid var(--border);
-  box-shadow:0 2px 6px rgba(0,0,0,.06);
+.topbar {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 1rem;
+  background: var(--white);
+  padding: 12px 30px;
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 2px 6px rgba(0,0,0,.06);
 }
-.brand-left{display:flex;align-items:center;gap:.5rem}
-.brand{
-  display:flex;align-items:center;gap:.5rem;
-  color:var(--primary);text-decoration:none;font-weight:700;font-size:18px;
+.brand-left { display: flex; align-items: center; gap: .5rem; }
+.brand {
+  display: flex; align-items: center; gap: .5rem;
+  color: var(--primary); text-decoration: none; font-weight: 700; font-size: 18px;
 }
-.topbar-right{display:flex;align-items:center;gap:18px}
-.nav-links{display:flex;align-items:center;gap:16px}
-.nav-links a{
-  color:var(--text-dark);text-decoration:none;font-weight:600;
-  transition:color .2s ease;
+.topbar-right { display: flex; align-items: center; gap: 18px; }
+.nav-links { display: flex; align-items: center; gap: 16px; }
+.nav-links a {
+  color: var(--text-dark); text-decoration: none; font-weight: 600;
+  transition: color .2s ease;
 }
-.nav-links a:hover,.nav-links a.active{color:var(--primary)}
-.user-name{
-  font-weight:600;color:var(--text-dark);
-  border:2px solid var(--primary);border-radius:8px;padding:6px 12px;background:#fff;
+.nav-links a:hover, .nav-links a.active { color: var(--primary); }
+.user-name {
+  font-weight: 600; color: var(--text-dark);
+  border: 2px solid var(--primary); border-radius: 8px; padding: 6px 12px;
+  background: #fff;
 }
-.logout-btn{
-  background:linear-gradient(135deg,#e0e0e0,#cfcfcf);
-  border:none;border-radius:6px;padding:8px 14px;font-weight:600;cursor:pointer;
-  transition:filter .2s ease;
+.logout-btn {
+  background: linear-gradient(135deg,#e0e0e0,#cfcfcf);
+  border: none; border-radius: 6px; padding: 8px 14px; font-weight: 600; cursor: pointer;
+  transition: filter .2s ease;
 }
-.logout-btn:hover{filter:brightness(.95)}
+.logout-btn:hover { filter: brightness(.95); }
 
 /* =============================
    🧭 LAYOUT / SIDEBAR
 ============================= */
-.container{
-  display:grid;grid-template-columns:230px 1fr;min-height:calc(100vh - 56px);
+.container {
+  display: grid; grid-template-columns: 230px 1fr;
+  min-height: calc(100vh - 56px);
 }
-.sidebar{
-  background:var(--white);padding:20px;border-right:1px solid var(--border);
+.sidebar {
+  background: var(--white); padding: 20px;
+  border-right: 1px solid var(--border);
 }
-.sidebar h3{margin:0 0 4px;color:var(--primary)}
-.subtitle{font-size:13px;color:var(--gray);margin:.25rem 0 20px}
+.sidebar h3 { margin: 0 0 4px; color: var(--primary); }
+.subtitle { font-size: 13px; color: var(--gray); margin: .25rem 0 20px; }
 
-.menu{display:flex;flex-direction:column;gap:6px}
-.menu a{
-  display:flex;align-items:center;gap:10px;
-  text-decoration:none;color:var(--text-dark);
-  padding:10px 12px;border-radius:8px;font-weight:500;transition:all .2s ease;
+.menu { display: flex; flex-direction: column; gap: 6px; }
+.menu a {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none; color: var(--text-dark);
+  padding: 10px 12px; border-radius: 8px; font-weight: 500;
+  transition: all .2s ease;
 }
-.menu a:hover,.menu a.active{
-  background:rgba(255,107,53,.15);color:var(--primary-dark);border-left:4px solid var(--primary);
+.menu a:hover, .menu a.active {
+  background: rgba(255,107,53,.15); color: var(--primary-dark);
+  border-left: 4px solid var(--primary);
 }
 
 /* =============================
    🖥️ MAIN CONTENT
 ============================= */
-.main-content{padding:28px}
-.section{display:none}
-.section.active{display:block}
-.header-section{
-  display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:10px;
+.main-content { padding: 28px; }
+.section { display: none; }
+.section.active { display: block; }
+.header-section {
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 1rem;
+  margin-bottom: 10px;
 }
 
 /* =============================
-   📊 DASHBOARD (cards)
+   📊 DASHBOARD
 ============================= */
-.stats-grid{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-  gap:20px;margin-top:20px;
+.stats-grid {
+  display: grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr));
+  gap: 20px; margin-top: 20px;
 }
-.card.stat-card{
-  border-radius:16px;padding:24px;color:#fff;text-align:center;font-weight:600;
-  box-shadow:0 4px 12px rgba(0,0,0,.12);
-  transition:transform .25s ease,box-shadow .25s ease;
+.card.stat-card {
+  border-radius: 16px; padding: 24px;
+  color: #fff; text-align: center; font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0,0,0,.12);
+  transition: transform .25s ease, box-shadow .25s ease;
 }
-.card.stat-card:hover{transform:translateY(-4px);box-shadow:0 6px 18px rgba(0,0,0,.22)}
-.card.stat-card:nth-child(1){background:var(--gradient-blue)}
-.card.stat-card:nth-child(2){background:var(--gradient-green)}
-.card.stat-card:nth-child(3){background:var(--gradient-pink)}
-.card.stat-card h3{margin:0 0 8px}
-.card.stat-card p{
-  margin:8px 0 14px;font-size:34px;font-weight:800;
+.card.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 18px rgba(0,0,0,.22);
 }
-.btn-manage{
-  background:#fff;color:var(--text-dark);border:2px solid var(--primary);
-  border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;transition:all .2s ease;
-}
-.btn-manage:hover{background:var(--primary);color:#fff}
-
-/* =============================
-   🟩 BOTONES GENERALES
-============================= */
-.btn-green{
-  background:var(--success);color:#fff;border:none;border-radius:8px;padding:9px 16px;
-  font-weight:700;cursor:pointer;transition:background .2s ease,transform .05s ease;
-}
-.btn-green:hover{background:var(--success-hover)}
-.btn-green:active{transform:scale(.98)}
-.btn-edit{background:var(--blue);color:#fff;border:none;border-radius:6px;padding:7px 12px}
-.btn-edit:hover{filter:brightness(.95)}
-.btn-delete{background:#ff7675;color:#fff;border:none;border-radius:6px;padding:7px 12px}
-.btn-delete:hover{filter:brightness(.93)}
-
-/* =============================
-   🧾 TABLAS (Categorías / Productos)
-============================= */
-.data-table{
-  width:100%;border-collapse:collapse;margin-top:16px;background:var(--white);
-  border-radius:10px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.08);
-}
-.data-table th,.data-table td{
-  padding:.9rem 1rem;text-align:left;border-bottom:1px solid var(--border);
-}
-.data-table th{
-  background:var(--primary);color:#fff;font-weight:700;text-transform:uppercase;letter-spacing:.03em;
-}
-.data-table tr:hover{background:#fafafa}
-.data-table img{
-  width:56px;height:56px;object-fit:cover;border-radius:8px;border:2px solid var(--border)
+.card.stat-card:nth-child(1) { background: var(--gradient-blue); }
+.card.stat-card:nth-child(2) { background: var(--gradient-green); }
+.card.stat-card:nth-child(3) { background: var(--gradient-pink); }
+.card.stat-card h3 { margin: 0 0 8px; }
+.card.stat-card p {
+  margin: 8px 0 14px; font-size: 34px; font-weight: 800;
 }
 
 /* =============================
-   📦 PEDIDOS KaNBAN
+   🟩 BOTONES
 ============================= */
-.orders-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
+.btn-green {
+  background: var(--success); color: #fff;
+  border: none; border-radius: 8px; padding: 9px 16px;
+  font-weight: 700; cursor: pointer;
+  transition: background .2s ease, transform .05s ease;
 }
+.btn-green:hover { background: var(--success-hover); }
+.btn-edit { background: var(--blue); color: #fff; border: none; border-radius: 6px; padding: 7px 12px; }
+.btn-delete { background: #ff7675; color: #fff; border: none; border-radius: 6px; padding: 7px 12px; }
 
-.orders-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
+/* =============================
+   🧾 TABLAS
+============================= */
+.data-table {
+  width: 100%; border-collapse: collapse;
+  margin-top: 16px; background: var(--white);
+  border-radius: 10px; overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,.08);
 }
+.data-table th, .data-table td {
+  padding: .9rem 1rem; text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.data-table th {
+  background: var(--primary); color: #fff;
+  font-weight: 700; text-transform: uppercase;
+}
+.data-table tr:hover { background: #fafafa; }
 
+/* =============================
+   📦 PEDIDOS – KANBAN
+============================= */
+
+/* Cabecera + leyenda */
+.orders-header { display:flex; align-items:center; justify-content:space-between; gap:1rem; }
+.orders-legend { display:flex; flex-wrap:wrap; gap:.4rem; }
 .chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.25rem 0.6rem;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #fff;
+  display:inline-flex; align-items:center; gap:.4rem;
+  padding:.25rem .6rem; border-radius:999px;
+  font-size:.8rem; font-weight:700; color:#fff;
 }
-
-/* 🎨 Chips de leyenda */
 .chip.st-pendiente { background: var(--st-pendiente); }
 .chip.st-confirmado { background: var(--st-confirmado); }
 .chip.st-terminado { background: var(--st-terminado); }
 .chip.st-cancelado { background: var(--st-cancelado); }
 
-.legend-help {
-  margin: 0.2rem 0 1rem;
-  color: var(--gray);
-  font-size: 0.9rem;
-}
+.legend-help { color:var(--gray); font-size:.9rem; margin:.2rem 0 1rem; }
 
-/* 🧱 Kanban */
+/* Kanban container */
 .kanban-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 18px;
-  margin-top: 12px;
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:18px; margin-top:12px;
 }
 
+/* Columnas */
 .kanban-column {
-  background: var(--white);
-  border-radius: 12px;
-  padding: 14px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  display: flex;
-  flex-direction: column;
+  background:var(--white); border-radius:12px;
+  padding:14px; box-shadow:0 2px 8px rgba(0,0,0,.08);
+  display:flex; flex-direction:column;
 }
-
 .kanban-colhead {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: #fff;
-  border-radius: 8px;
-  padding: 0.55rem 0.8rem;
-  margin-bottom: 10px;
-  font-weight: 800;
+  display:flex; justify-content:space-between; align-items:center;
+  padding:.55rem .8rem; border-radius:8px; color:#fff;
+  font-weight:800; margin-bottom:10px;
 }
 
-/* 🎨 Colores de columnas */
-.st-pendiente .kanban-colhead { background: var(--st-pendiente); }
+/* COLORES REALES SEGÚN BACKEND */
+.st-pendiente .kanban-colhead  { background: var(--st-pendiente); }
 .st-confirmado .kanban-colhead { background: var(--st-confirmado); }
-.st-terminado .kanban-colhead { background: var(--st-terminado); }
-.st-cancelado .kanban-colhead { background: var(--st-cancelado); }
-
-.col-title {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
+.st-terminado .kanban-colhead  { background: var(--st-terminado); }
+.st-cancelado .kanban-colhead  { background: var(--st-cancelado); }
 
 .badge-count {
-  background: rgba(255, 255, 255, 0.28);
-  padding: 2px 8px;
-  border-radius: 8px;
-  font-size: 0.8rem;
-  font-weight: 800;
+  background:rgba(255,255,255,.28);
+  padding:2px 8px; border-radius:8px;
+  font-weight:800; font-size:.8rem;
 }
 
 .kanban-list {
-  background: #f9fafb;
-  border-radius: 8px;
-  padding: 10px;
-  min-height: 240px;
-  flex: 1;
-  overflow: auto;
+  background:#f9fafb; border-radius:8px;
+  padding:10px; min-height:240px; flex:1;
+  overflow:auto;
 }
 
-/* 🧾 Tarjetas de pedido */
+/* Tarjetas */
 .pedido-card {
-  background: #fff;
-  border: 1px solid var(--border);
-  border-left: 6px solid var(--primary);
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 10px;
-  cursor: grab;
-  transition: transform 0.2s ease, background 0.2s ease;
+  background:#fff; border:1px solid var(--border);
+  border-left:6px solid var(--primary);
+  border-radius:8px; padding:12px;
+  margin-bottom:10px; cursor:grab;
+  transition:transform .2s ease, background .2s ease;
 }
+.pedido-card:hover { transform:scale(1.02); background:rgba(255,107,53,.06); }
 
-.pedido-card:hover {
-  transform: scale(1.02);
-  background: rgba(255, 107, 53, 0.06);
-}
-
-.pedido-card h4 {
-  margin: 0 0 4px;
-  font-size: 15px;
-}
-
-.pedido-card p {
-  margin: 2px 0;
-  font-size: 13px;
-  color: var(--gray);
-}
-
-/* 🎨 Colores de borde lateral por estado */
-.pedido-card.pendiente { border-left-color: var(--st-pendiente); }
+.pedido-card.pendiente  { border-left-color: var(--st-pendiente); }
 .pedido-card.confirmado { border-left-color: var(--st-confirmado); }
-.pedido-card.terminado { border-left-color: var(--st-terminado); }
-.pedido-card.cancelado { border-left-color: var(--st-cancelado); }
+.pedido-card.terminado  { border-left-color: var(--st-terminado); }
+.pedido-card.cancelado  { border-left-color: var(--st-cancelado); }
 
-.drag-over { background: rgba(255, 107, 53, 0.08); }
+.drag-over { background:rgba(255,107,53,.08); }
 
-/* 🪟 Modal pedido */
+/* =============================
+   🪟 MODAL DETALLE PEDIDO
+============================= */
 .modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.45);
+  display:flex; align-items:center; justify-content:center;
+  z-index:999;
 }
-
-.hidden { display: none !important; }
+.hidden { display:none!important; }
 
 .modal-content {
-  background: #fff;
-  border-radius: 14px;
-  padding: 2rem;
-  width: min(860px, 92vw);
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.25);
-  position: relative;
-  animation: fadeIn 0.25s ease;
+  background:#fff; border-radius:14px;
+  padding:2rem; width:min(860px,92vw);
+  box-shadow:0 5px 20px rgba(0,0,0,.25);
+  position:relative; animation:fadeIn .25s ease;
 }
 
 .order-close {
-  position: absolute;
-  right: 14px;
-  top: 12px;
-  background: transparent;
-  border: 0;
-  color: var(--gray);
-  font-size: 1.25rem;
-  cursor: pointer;
+  position:absolute; right:14px; top:12px;
+  background:transparent; border:0; cursor:pointer;
+  font-size:1.25rem; color:var(--gray);
 }
-.order-close:hover { color: var(--text-dark); }
+.order-close:hover { color:var(--text-dark); }
 
-.order-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-}
+.order-header { display:flex; justify-content:space-between; margin-bottom:1rem; }
+.order-id { font-weight:800; color:var(--gray); }
 
-.order-id { font-weight: 800; color: var(--gray); }
-
-/* 🔵 Estado visual */
+/* Pill de estado */
 .status-pill {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  color: #fff;
-  font-weight: 800;
-  font-size: 0.8rem;
+  padding:.25rem .75rem; border-radius:999px;
+  color:#fff; font-weight:800; font-size:.8rem;
 }
-
 .status-pill.pendiente  { background: var(--st-pendiente); }
 .status-pill.confirmado { background: var(--st-confirmado); }
 .status-pill.terminado  { background: var(--st-terminado); }
 .status-pill.cancelado  { background: var(--st-cancelado); }
-}
-/* ============================= */
-/* 🔧 FORMULARIO MODAL (CATEGORÍA / PRODUCTO) */
-/* ============================= */
-#form-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(3px);
-}
 
-#form-modal.hidden {
-  display: none;
+/* =============================
+   🔧 FORM MODAL CAT / PROD
+============================= */
+#form-modal {
+  position:fixed; inset:0;
+  background:rgba(0, 0, 0, 0.55);
+  display:flex; align-items:center; justify-content:center;
+  z-index:1000; backdrop-filter:blur(3px);
 }
+#form-modal.hidden { display:none; }
 
 #form-modal .modal-content {
-  background: #fff;
-  width: 440px;
-  max-width: 95%;
-  border-radius: 10px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
-  padding: 28px 32px;
-  position: relative;
-  animation: fadeIn 0.25s ease-in-out;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-#form-modal h3 {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--text-dark);
-  margin-bottom: 0.5rem;
-  text-align: left;
+  background:#fff; width:440px; max-width:95%;
+  border-radius:10px; padding:28px 32px;
+  box-shadow:0 8px 25px rgba(0,0,0,0.25);
+  display:flex; flex-direction:column; gap:14px;
 }
 
 #close-modal {
-  position: absolute;
-  right: 16px;
-  top: 12px;
-  background: none;
-  border: none;
-  font-size: 1.7rem;
-  cursor: pointer;
-  color: var(--gray);
-  transition: color 0.25s;
+  position:absolute; right:16px; top:12px;
+  background:none; border:none;
+  font-size:1.7rem; cursor:pointer; color:var(--gray);
 }
-#close-modal:hover {
-  color: var(--primary);
-}
+#close-modal:hover { color:var(--primary); }
 
 #formulario-dinamico {
-  display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
-}
-
-#formulario-dinamico label {
-  font-weight: 600;
-  color: #333;
-  margin-top: 5px;
+  display:flex; flex-direction:column; gap:.7rem;
 }
 
 #formulario-dinamico input,
 #formulario-dinamico textarea,
 #formulario-dinamico select {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1.8px solid #ddd;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  outline: none;
-  transition: border-color 0.25s;
+  width:100%; padding:10px 12px;
+  border:1.8px solid #ddd; border-radius:6px;
+  font-size:.95rem; outline:none;
+  transition:border-color .25s;
 }
-
 #formulario-dinamico input:focus,
 #formulario-dinamico textarea:focus,
 #formulario-dinamico select:focus {
-  border-color: var(--primary);
+  border-color:var(--primary);
 }
 
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 500;
-  color: #444;
-}
-
-.btn-green {
-  width: 100%;
-  background: var(--success);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 10px;
-  font-size: 1rem;
-  cursor: pointer;
-  font-weight: 700;
-  transition: background 0.25s;
-}
-.btn-green:hover {
-  background: var(--success-hover);
-}
-
+.checkbox-label { display:flex; align-items:center; gap:8px; }
 
 /* =============================
    ✨ ANIMACIONES
 ============================= */
-@keyframes fadeIn{
-  from{opacity:0;transform:translateY(-8px)}
-  to{opacity:1;transform:translateY(0)}
+@keyframes fadeIn {
+  from { opacity:0; transform:translateY(-8px); }
+  to { opacity:1; transform:translateY(0); }
 }
 
 /* =============================
    📱 RESPONSIVE
 ============================= */
-@media (max-width:980px){
-  .container{grid-template-columns:1fr}
-  .sidebar{border-right:none;border-bottom:1px solid var(--border)}
-}
-/* =============================
-   🎯 Corrección de botón principal
-   ============================= */
-#btn-nuevo-producto,
-#btn-nueva-categoria {
-  width: auto !important;
-  display: inline-block;
-  padding: 10px 18px;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 700;
-  background: var(--success);
-  color: #fff;
-  cursor: pointer;
-  transition: background 0.25s ease, transform 0.1s ease;
+@media (max-width:980px) {
+  .container { grid-template-columns:1fr; }
+  .sidebar { border-right:none; border-bottom:1px solid var(--border); }
 }
 
+/* =============================
+   🎯 Corrección botones
+============================= */
+#btn-nuevo-producto,
+#btn-nueva-categoria {
+  width:auto!important;
+  display:inline-block;
+  padding:10px 18px;
+  border-radius:8px;
+  font-size:1rem;
+  font-weight:700;
+  background:var(--success);
+  color:#fff;
+  cursor:pointer;
+  transition:background .25s ease, transform .1s ease;
+}
 #btn-nuevo-producto:hover,
 #btn-nueva-categoria:hover {
-  background: var(--success-hover);
-  transform: scale(1.02);
+  background:var(--success-hover);
+  transform:scale(1.02);
 }
