@@ -559,7 +559,6 @@ async function abrirModalPedido(pedido: Pedido) {
   const modal = document.getElementById("pedido-modal")!;
   const pill = document.getElementById("pedido-status-pill")!;
   const title = document.getElementById("pedido-title")!;
-  const idEl = document.getElementById("pedido-id")!;
   const cliente = document.getElementById("pedido-cliente")!;
   const fecha = document.getElementById("pedido-fecha")!;
   const telefono = document.getElementById("pedido-telefono")!;
@@ -572,74 +571,73 @@ async function abrirModalPedido(pedido: Pedido) {
   const select = document.getElementById("estado-select") as HTMLSelectElement;
   const btnGuardar = document.getElementById("btn-guardar-estado")!;
 
-  // ============= Cabecera =============
+  // -------------------------------
+  // CABECERA
+  // -------------------------------
   title.textContent = `Detalle del Pedido #${pedido.id}`;
-  idEl.textContent = `#${pedido.id}`;
   pill.textContent = pedido.estado;
   pill.className = `status-pill ${pedido.estado.toLowerCase()}`;
 
-  // Buscar cliente por usuario_id si no vino en el pedido
+  // --------------------------------
+  // OBTENER CLIENTE REAL
+  // --------------------------------
   try {
-    if (!pedido.cliente && (pedido as any).usuario_id) {
-      const user = await api.get(`/usuarios/${(pedido as any).usuario_id}`);
-      pedido.cliente = user.nombre ?? "Sin nombre";
-    }
+    const user = await api.get(`/usuarios/${(pedido as any).usuario_id}`);
+    cliente.textContent = `${user.nombre} ${user.apellido}`;
+    telefono.textContent = user.celular || "-";
+    direccion.textContent = user.direccion || "-";
   } catch {
-    pedido.cliente = "Sin nombre";
+    cliente.textContent = "Sin nombre";
+    telefono.textContent = "-";
+    direccion.textContent = "-";
   }
 
-  cliente.textContent = pedido.cliente ?? "Sin nombre";
-  fecha.textContent = pedido.fecha ?? "-";
-  telefono.textContent = pedido.telefono ?? "-";
-  direccion.textContent = pedido.direccion ?? "-";
-  pago.textContent = pedido.metodoPago ?? "-";
+  // Fecha formateada
+  fecha.textContent = pedido.fecha || "-";
 
-  // ============= Productos =============
-  tbody.innerHTML = `<tr><td colspan="4">Cargando productos...</td></tr>`;
+  // Método de pago
+  pago.textContent = pedido.metodoPago || "-";
+
+  // -------------------------------
+  // DETALLES DEL PEDIDO
+  // -------------------------------
+  tbody.innerHTML = `<tr><td colspan="4">Cargando...</td></tr>`;
+
   try {
-    // GET /api/detalles?pedidoId={id}
-    const detalles = await api.get(`/detalles?pedidoId=${pedido.id}`);
-    const productos: PedidoItem[] = Array.isArray(detalles)
-      ? detalles.map((d: any) => ({
-          nombre: d.producto?.nombre ?? "Producto",
-          cantidad: d.cantidad ?? 1,
-          precio: Number(d.producto?.precio ?? d.subtotal ?? 0),
-        }))
-      : [];
-
+    const detalles = await api.get(`/pedidos/${pedido.id}/detalles`);
     tbody.innerHTML = "";
-    let subtotal = 0;
-    if (productos.length === 0) {
-      tbody.innerHTML = `<tr class="empty-row"><td colspan="4">Sin productos</td></tr>`;
-    } else {
-      productos.forEach((pr) => {
-        const linea = pr.cantidad * pr.precio;
-        subtotal += linea;
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${pr.nombre}</td>
-          <td>${pr.cantidad}</td>
-          <td>${fmtCurrency(pr.precio)}</td>
-          <td>${fmtCurrency(linea)}</td>
-        `;
-        tbody.appendChild(tr);
-      });
+
+    let subtotalCalc = 0;
+
+    for (const d of detalles) {
+      const producto = await api.get(`/productos/${d.producto_id}`);
+
+      const line = d.cantidad * producto.precio;
+      subtotalCalc += line;
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${producto.nombre}</td>
+        <td>${d.cantidad}</td>
+        <td>${fmtCurrency(producto.precio)}</td>
+        <td>${fmtCurrency(line)}</td>
+      `;
+      tbody.appendChild(tr);
     }
-    sub.textContent = fmtCurrency(subtotal);
-    env.textContent = fmtCurrency(pedido.envio ?? 0);
-    tot.textContent = fmtCurrency(pedido.total ?? subtotal);
-  } catch (err) {
-    console.error("Error al obtener detalles del pedido:", err);
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="4">Error al cargar productos</td></tr>`;
+
+    sub.textContent = fmtCurrency(subtotalCalc);
+    env.textContent = fmtCurrency(pedido.envio || 0);
+    tot.textContent = fmtCurrency(subtotalCalc + (pedido.envio || 0));
+
+  } catch (e) {
+    console.error(e);
+    tbody.innerHTML = `<tr><td colspan="4">Error al cargar productos</td></tr>`;
   }
 
-  // ============= Estado editable =============
+  // -------------------------------
+  // ESTADO EDITABLE
+  // -------------------------------
   select.value = pedido.estado;
-  select.onchange = () => {
-    const nuevo = select.value as Estado;
-    pill.textContent = nuevo;
-    pill.className = `status-pill ${nuevo.toLowerCase()}`;
-  };
 
   btnGuardar.onclick = async () => {
     const nuevo = select.value as Estado;
