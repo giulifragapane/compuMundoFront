@@ -271,6 +271,8 @@ const btnNuevoProducto = document.getElementById("btn-nuevo-producto")!;
 async function cargarProductosUI() {
   tablaProductos.innerHTML = "";
   const [productos, categorias] = await Promise.all([api.get("/productos"), obtenerCategorias()]);
+  console.log("✅ Productos cargados:", productos);
+  console.log("✅ Categorías cargadas:", categorias);
   const mapCat = new Map(categorias.map((c: any) => [c.id, c.nombre]));
 
   productos.forEach((p: any) => {
@@ -282,7 +284,7 @@ async function cargarProductosUI() {
       <td>${p.descripcion ?? ""}</td>
       <td>$${Number(p.precio ?? 0).toFixed(2)}</td>
       <td>${p.stock ?? 0}</td>
-      <td>${mapCat.get(p.categoria?.id) || "Sin categoría"}</td>
+      <td>${mapCat.get(p.categoriaId) || "Sin categoría"}</td>
       <td>${p.disponible ? "✅" : "❌"}</td>
       <td>
         <button class="btn-edit editar" data-id="${p.id}" title="Editar">✏️</button>
