@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       `
       )
       .join("");
-
+      console.log("Pedidos renderizados:", pedidos);
     // Evento para ver el detalle de cada pedido
     document.querySelectorAll(".pedido-card").forEach((card) => {
       card.addEventListener("click", async () => {
