@@ -21,32 +21,17 @@ import {
 } from "../products/products.ts";
 
 // ===============================
-// Tipos
+// Tipos del dominio (interfaces nuevas)
 // ===============================
-type Estado = "PENDIENTE" | "CONFIRMADO" | "TERMINADO" | "CANCELADO";
+import type { ICategoria } from "../../../types/ICategoria";
+import type { IProduct } from "../../../types/IProduct";
+import type { IUser } from "../../../types/IUser";
+import type { IOrder, IOrderItem, OrderStatus } from "../../../types/IOrders";
 
-interface PedidoItem {
-  nombre: string;
-  cantidad: number;
-  precio: number;
-}
+// Estados válidos del pedido (coinciden con OrderStatus)
+const ESTADOS: OrderStatus[] = ["PENDIENTE", "CONFIRMADO", "TERMINADO", "CANCELADO"];
 
-interface Pedido {
-  id: number;
-  cliente?: string;
-  telefono?: string;
-  direccion?: string;
-  metodoPago?: string;
-  fecha?: string;      // ISO o texto
-  envio?: number;      // costo envío
-  total: number;       // total final
-  estado: Estado;
-  productos?: PedidoItem[]; // si viene expandido
-}
-
-const ESTADOS: Estado[] = ["PENDIENTE", "CONFIRMADO", "TERMINADO", "CANCELADO"];
-
-// Util
+// Util para moneda
 const fmtCurrency = (n: number | undefined | null) =>
   (n ?? 0).toLocaleString("es-AR", { style: "currency", currency: "ARS" });
 
@@ -54,6 +39,7 @@ const fmtCurrency = (n: number | undefined | null) =>
 // Arranque protegido
 // ===============================
 document.addEventListener("DOMContentLoaded", () => {
+  // Solo ADMIN puede entrar
   routeGuard("ADMIN");
   inicializarPanelAdmin();
 });
@@ -78,7 +64,7 @@ function setActiveMenuBySection(sectionId: string) {
   document.querySelectorAll<HTMLAnchorElement>(".menu a").forEach((a) => a.classList.remove("active"));
 
   const map: Record<string, string> = {
-    "dashboard-section": "",                  // no hay id dedicado en sidebar
+    "dashboard-section": "", // no hay id dedicado en sidebar
     "categorias-section": "menu-categorias",
     "productos-section": "menu-productos",
     "pedidos-section": "menu-pedidos",
@@ -95,6 +81,7 @@ function inicializarPanelAdmin() {
   const userNameSpan = document.getElementById("user-name");
   const storedUser = localStorage.getItem("username");
   const storedRole = localStorage.getItem("role");
+
   if (userNameSpan) {
     userNameSpan.textContent =
       storedUser || (storedRole?.toUpperCase() === "ADMIN" ? "Administrador" : "Usuario");
@@ -105,14 +92,14 @@ function inicializarPanelAdmin() {
     window.location.href = "/src/pages/auth/login/login.html";
   });
 
-  // Header: enlaces superiores
+  // Header: enlaces superiores (logo y "Panel Admin")
   document.querySelector(".brand-left .brand")?.addEventListener("click", (e) => {
     e.preventDefault();
     showSection("dashboard-section");
     setActiveMenuBySection("dashboard-section");
   });
+
   document.querySelector('.nav-links a[href="#"]')?.addEventListener("click", (e) => {
-    // "Panel Admin" activo
     e.preventDefault();
     showSection("dashboard-section");
     setActiveMenuBySection("dashboard-section");
@@ -174,14 +161,18 @@ async function bootstrapDashboardYTablas() {
   const pedidosCount = document.getElementById("count-pedidos")!;
 
   try {
+    // Usamos las APIs reales
     const [cats, prods, peds] = await Promise.all([
-      api.get("/categorias"),
-      api.get("/productos"),
-      api.get("/pedidos"),
+      obtenerCategorias(), // ICategoria[]
+      obtenerProductos(),  // IProduct[]
+      api.get("/pedidos"), // IOrder[]
     ]);
+
+    const pedidos = (Array.isArray(peds) ? (peds as IOrder[]) : []);
+
     animateCounter(categoriasCount, cats.length ?? 0);
     animateCounter(productosCount, prods.length ?? 0);
-    animateCounter(pedidosCount, peds.length ?? 0);
+    animateCounter(pedidosCount, pedidos.length ?? 0);
   } catch (e) {
     categoriasCount.textContent = "-";
     productosCount.textContent = "-";
@@ -223,33 +214,38 @@ let idEditando: number | null = null;
 
 async function cargarCategoriasUI() {
   tablaCategorias.innerHTML = "";
-  const categorias = await obtenerCategorias(); // usa tu módulo real
-  categorias
-    .filter((c: any) => !c.eliminado)
-    .forEach((c: any) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${c.id}</td>
-        <td><img src="${c.imagen || "https://placehold.co/60x60"}" width="60" height="60" style="object-fit:cover;border-radius:8px"></td>
-        <td>${c.nombre ?? ""}</td>
-        <td>${c.descripcion ?? ""}</td>
-        <td>
-          <button class="btn-edit editar" data-id="${c.id}" title="Editar">✏️</button>
-          <button class="btn-delete eliminar" data-id="${c.id}" title="Eliminar">🗑️</button>
-        </td>
-      `;
-      tablaCategorias.appendChild(tr);
-    });
+  const categorias: ICategoria[] = await obtenerCategorias(); // usa tu módulo real
+
+  categorias.forEach((c) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${c.id}</td>
+      <td>
+        <img 
+          src="${c.imagen || "https://placehold.co/60x60"}" 
+          width="60" height="60" 
+          style="object-fit:cover;border-radius:8px"
+        >
+      </td>
+      <td>${c.nombre ?? ""}</td>
+      <td>${c.descripcion ?? ""}</td>
+      <td>
+        <button class="btn-edit editar" data-id="${c.id}" title="Editar">✏️</button>
+        <button class="btn-delete eliminar" data-id="${c.id}" title="Eliminar">🗑️</button>
+      </td>
+    `;
+    tablaCategorias.appendChild(tr);
+  });
 
   // Delegación de eventos
   tablaCategorias.querySelectorAll<HTMLButtonElement>("button.editar").forEach((b) =>
     b.addEventListener("click", async () => {
       const id = Number(b.dataset.id);
-      // fetch detalle
-      const cat = (await api.get(`/categorias/${id}`)) || null;
-      abrirFormulario("categoria", cat);
+      const cat = (await api.get(`/categorias/${id}`)) as ICategoria | null;
+      abrirFormulario("categoria", cat ?? undefined);
     })
   );
+
   tablaCategorias.querySelectorAll<HTMLButtonElement>("button.eliminar").forEach((b) =>
     b.addEventListener("click", async () => {
       const id = Number(b.dataset.id);
@@ -270,21 +266,32 @@ const btnNuevoProducto = document.getElementById("btn-nuevo-producto")!;
 
 async function cargarProductosUI() {
   tablaProductos.innerHTML = "";
-  const [productos, categorias] = await Promise.all([api.get("/productos"), obtenerCategorias()]);
+
+  const [productosRaw, categorias] = await Promise.all([
+    obtenerProductos(),    // IProduct[]
+    obtenerCategorias(),   // ICategoria[]
+  ]);
+
+  const productos = productosRaw as IProduct[];
   console.log("✅ Productos cargados:", productos);
   console.log("✅ Categorías cargadas:", categorias);
-  const mapCat = new Map(categorias.map((c: any) => [c.id, c.nombre]));
 
-  productos.forEach((p: any) => {
+  productos.forEach((p) => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${p.id}</td>
-      <td><img src="${p.imagen || "https://placehold.co/60x60"}" width="60" height="60" style="object-fit:cover;border-radius:8px"></td>
+      <td>
+        <img 
+          src="${p.imagen || "https://placehold.co/60x60"}" 
+          width="60" height="60" 
+          style="object-fit:cover;border-radius:8px"
+        >
+      </td>
       <td>${p.nombre ?? ""}</td>
       <td>${p.descripcion ?? ""}</td>
-      <td>$${Number(p.precio ?? 0).toFixed(2)}</td>
+      <td>${fmtCurrency(p.precio)}</td>
       <td>${p.stock ?? 0}</td>
-      <td>${mapCat.get(p.categoriaId) || "Sin categoría"}</td>
+      <td>${p.categoriaNombre || "Sin categoría"}</td>
       <td>${p.disponible ? "✅" : "❌"}</td>
       <td>
         <button class="btn-edit editar" data-id="${p.id}" title="Editar">✏️</button>
@@ -298,10 +305,11 @@ async function cargarProductosUI() {
   tablaProductos.querySelectorAll<HTMLButtonElement>("button.editar").forEach((b) =>
     b.addEventListener("click", async () => {
       const id = Number(b.dataset.id);
-      const prod = await api.get(`/productos/${id}`);
+      const prod = (await api.get(`/productos/${id}`)) as IProduct;
       abrirFormulario("producto", prod);
     })
   );
+
   tablaProductos.querySelectorAll<HTMLButtonElement>("button.eliminar").forEach((b) =>
     b.addEventListener("click", async () => {
       const id = Number(b.dataset.id);
@@ -317,9 +325,9 @@ btnNuevoProducto.addEventListener("click", () => abrirFormulario("producto"));
 // ===============================
 // 🧾 Formularios dinámicos (Categorías / Productos)
 // ===============================
-function abrirFormulario(modo: "categoria" | "producto", datos: any = null) {
+function abrirFormulario(modo: "categoria" | "producto", datos?: ICategoria | IProduct) {
   modoActual = modo;
-  idEditando = datos?.id ?? null;
+  idEditando = (datos as any)?.id ?? null;
 
   // Título dinámico
   formTitle.textContent = datos
@@ -330,81 +338,89 @@ function abrirFormulario(modo: "categoria" | "producto", datos: any = null) {
   // 📂 FORMULARIO CATEGORÍA
   // ===========================
   if (modo === "categoria") {
+    const cat = datos as ICategoria | undefined;
+
     formContainer.innerHTML = `
       <label>Nombre</label>
-      <input id="nombre" type="text" value="${datos?.nombre ?? ""}" placeholder="Ej: Hamburguesas" required>
+      <input id="nombre" type="text" value="${cat?.nombre ?? ""}" placeholder="Ej: Hamburguesas" required>
 
       <label>Descripción</label>
-      <textarea id="descripcion" rows="3" placeholder="Breve descripción...">${datos?.descripcion ?? ""}</textarea>
+      <textarea id="descripcion" rows="3" placeholder="Breve descripción...">${cat?.descripcion ?? ""}</textarea>
 
       <label>URL de Imagen</label>
-      <input id="imagen" type="text" value="${datos?.imagen ?? ""}" placeholder="https://ejemplo.com/imagen.jpg">
+      <input id="imagen" type="text" value="${cat?.imagen ?? ""}" placeholder="https://ejemplo.com/imagen.jpg">
 
-      <button type="submit" class="btn-green">${datos ? "Actualizar" : "Guardar"}</button>
+      <button type="submit" class="btn-green">${cat ? "Actualizar" : "Guardar"}</button>
     `;
-  } 
-  // ===========================
-  // 🍔 FORMULARIO PRODUCTO
-  // ===========================
-  else {
-    formContainer.innerHTML = `<p style="margin:0 0 8px">Cargando categorías...</p>`;
+  } else {
+ // ===========================
+// 🍔 FORMULARIO PRODUCTO
+// ===========================
+const prod = datos as IProduct | undefined;
+formContainer.innerHTML = `<p style="margin:0 0 8px">Cargando categorías...</p>`;
 
-    (async () => {
-      try {
-        const categorias = (await obtenerCategorias()).filter((c: any) => !c.eliminado);
-        const opciones = categorias
-          .map(
-            (c: any) =>
-              `<option value="${c.id}" ${datos?.categoria?.id === c.id ? "selected" : ""}>${c.nombre}</option>`
-          )
-          .join("");
+(async () => {
+  try {
+    // 👇 Forzamos el tipo de las categorías
+    const categorias = (await obtenerCategorias()) as ICategoria[];
 
-        formContainer.innerHTML = `
-          <label>Nombre</label>
-          <input id="nombre" type="text" value="${datos?.nombre ?? ""}" placeholder="Ej: Pizza Margarita" required>
+    const opciones = categorias
+      .map((c: ICategoria) => 
+        `<option value="${c.id}" ${
+          prod?.categoriaId === c.id ? "selected" : ""
+        }>${c.nombre}</option>`
+      )
+      .join("");
 
-          <label>Descripción</label>
-          <textarea id="descripcion" rows="3" placeholder="Breve descripción del producto...">${datos?.descripcion ?? ""}</textarea>
+    formContainer.innerHTML = `
+      <label>Nombre</label>
+      <input id="nombre" type="text" value="${prod?.nombre ?? ""}" placeholder="Ej: Pizza Margarita" required>
 
-          <label>Precio</label>
-          <input id="precio" type="number" step="0.01" min="0" value="${datos?.precio ?? 0}" required>
+      <label>Descripción</label>
+      <textarea id="descripcion" rows="3" placeholder="Breve descripción del producto...">${prod?.descripcion ?? ""}</textarea>
 
-          <label>Stock</label>
-          <input id="stock" type="number" min="0" value="${datos?.stock ?? 0}" required>
+      <label>Precio</label>
+      <input id="precio" type="number" step="0.01" min="0" value="${prod?.precio ?? 0}" required>
 
-          <label>Categoría</label>
-          <select id="categoria" required>
-            <option value="">Seleccionar categoría</option>
-            ${opciones}
-          </select>
+      <label>Stock</label>
+      <input id="stock" type="number" min="0" value="${prod?.stock ?? 0}" required>
 
-          <label>URL de Imagen</label>
-          <input id="imagen" type="text" placeholder="https://ejemplo.com/imagen.jpg" value="${datos?.imagen ?? ""}">
+      <label>Categoría</label>
+      <select id="categoria" required>
+        <option value="">Seleccionar categoría</option>
+        ${opciones}
+      </select>
 
-          <label class="checkbox-label">
-            <input id="disponible" type="checkbox" ${datos?.disponible ? "checked" : ""}>
-            Producto disponible
-          </label>
+      <label>URL de Imagen</label>
+      <input id="imagen" type="text" placeholder="https://ejemplo.com/imagen.jpg" value="${prod?.imagen ?? ""}">
 
-          <button type="submit" class="btn-green">${datos ? "Actualizar" : "Guardar"}</button>
-        `;
-      } catch (error) {
-        formContainer.innerHTML = `<p style="color:red;">Error al cargar categorías.</p>`;
-      }
-    })();
+      <label class="checkbox-label">
+        <input id="disponible" type="checkbox" ${prod?.disponible ? "checked" : ""}>
+        Producto disponible
+      </label>
+
+      <button type="submit" class="btn-green">${prod ? "Actualizar" : "Guardar"}</button>
+    `;
+  } catch (error) {
+    console.error(error);
+    formContainer.innerHTML = `<p style="color:red;">Error al cargar categorías.</p>`;
   }
+})();
 
+}
   // Mostrar modal
   modal.classList.remove("hidden");
 }
 
 closeModalBtn.addEventListener("click", () => modal.classList.add("hidden"));
 
+// Escuchamos el submit del formulario dinámico (delegado)
 formContainer.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!modoActual) return;
 
-  const getVal = (id: string) => (document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement).value.trim();
+  const getVal = (id: string) =>
+    (document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement).value.trim();
 
   try {
     if (modoActual === "categoria") {
@@ -412,7 +428,6 @@ formContainer.addEventListener("submit", async (e) => {
         nombre: getVal("nombre"),
         descripcion: (document.getElementById("descripcion") as HTMLTextAreaElement).value.trim(),
         imagen: getVal("imagen"),
-        eliminado: false,
       };
       if (idEditando) await actualizarCategoria(idEditando, payload);
       else await crearCategoria(payload);
@@ -426,7 +441,6 @@ formContainer.addEventListener("submit", async (e) => {
         imagen: getVal("imagen"),
         categoriaId: parseInt((document.getElementById("categoria") as HTMLSelectElement).value),
         disponible: (document.getElementById("disponible") as HTMLInputElement).checked,
-        eliminado: false,
       };
       if (idEditando) await actualizarProducto(idEditando, payload);
       else await crearProducto(payload);
@@ -440,14 +454,14 @@ formContainer.addEventListener("submit", async (e) => {
 });
 
 // ===============================
-// 🧱 PEDIDOS – Kanban real (API con detalles y usuario)
+// 🧱 PEDIDOS – Kanban real (API con IOrder)
 // ===============================
-let pedidosCache: Pedido[] = [];
+let pedidosCache: IOrder[] = [];
 
-async function fetchPedidos(): Promise<Pedido[]> {
+async function fetchPedidos(): Promise<IOrder[]> {
   try {
     const pedidos = await api.get("/pedidos");
-    return Array.isArray(pedidos) ? pedidos : [];
+    return Array.isArray(pedidos) ? (pedidos as IOrder[]) : [];
   } catch (err) {
     console.error("Error al obtener pedidos:", err);
     return [];
@@ -462,7 +476,7 @@ function limpiarColumnas() {
 }
 
 function actualizarBadges() {
-  const counts: Record<Estado, number> = {
+  const counts: Record<OrderStatus, number> = {
     PENDIENTE: 0,
     CONFIRMADO: 0,
     TERMINADO: 0,
@@ -479,24 +493,26 @@ function actualizarBadges() {
   }
 }
 
-
-function cardPedido(p: Pedido): HTMLElement {
+function cardPedido(p: IOrder): HTMLElement {
   const card = document.createElement("div");
   card.className = `pedido-card ${p.estado.toLowerCase()}`;
   card.setAttribute("draggable", "true");
   card.dataset.id = String(p.id);
   card.dataset.estado = p.estado;
+
   card.innerHTML = `
     <h4>Pedido #${p.id}</h4>
-    <p><b>Cliente:</b> ${p.cliente ?? "Sin nombre"}</p>
+    <p><b>Usuario ID:</b> ${p.usuarioId}</p>
     <p><b>Total:</b> ${fmtCurrency(p.total)}</p>
     <p><b>Estado:</b> ${p.estado}</p>
   `;
+
+  // Click para abrir detalle
   card.addEventListener("click", () => abrirModalPedido(p));
   return card;
 }
 
-function renderPedidos(pedidos: Pedido[]) {
+function renderPedidos(pedidos: IOrder[]) {
   limpiarColumnas();
   pedidos.forEach((p) => {
     const col = document.getElementById(`col-${p.estado.toLowerCase()}`);
@@ -512,41 +528,48 @@ async function recargarKanban() {
 
 function inicializarDragAndDropPedidos() {
   const lists = document.querySelectorAll<HTMLElement>(".kanban-list");
+
   lists.forEach((list) => {
     list.addEventListener("dragover", (e) => {
       e.preventDefault();
       list.parentElement?.classList.add("drag-over");
     });
+
     list.addEventListener("dragleave", () => {
       list.parentElement?.classList.remove("drag-over");
     });
+
     list.addEventListener("drop", async (e) => {
       e.preventDefault();
       list.parentElement?.classList.remove("drag-over");
       const dragging = document.querySelector(".pedido-card.dragging") as HTMLElement | null;
       if (!dragging) return;
+
       const id = Number(dragging.dataset.id);
-      const nuevo = (list.dataset.estado as Estado) || "PENDIENTE";
+      const nuevo = (list.dataset.estado as OrderStatus) || "PENDIENTE";
       await updatePedidoEstado(id, nuevo);
     });
   });
+
   document.addEventListener("dragstart", (e) => {
     const t = e.target as HTMLElement;
     if (t.classList.contains("pedido-card")) t.classList.add("dragging");
   });
+
   document.addEventListener("dragend", (e) => {
     const t = e.target as HTMLElement;
     t.classList.remove("dragging");
   });
 }
 
-async function updatePedidoEstado(id: number, estado: Estado) {
+async function updatePedidoEstado(id: number, estado: OrderStatus) {
   const p = pedidosCache.find((x) => x.id === id);
   if (p) {
     p.estado = estado;
     renderPedidos(pedidosCache);
   }
   try {
+    // Se asume que el backend acepta { estado } en el PUT
     await api.put(`/pedidos/${id}`, { estado });
   } catch (err) {
     console.warn("⚠️ No se pudo actualizar en backend:", err);
@@ -555,9 +578,9 @@ async function updatePedidoEstado(id: number, estado: Estado) {
 }
 
 // ===============================
-// 💬 MODAL DETALLE DE PEDIDO
+// 💬 MODAL DETALLE DE PEDIDO (usa IOrder.items)
 // ===============================
-async function abrirModalPedido(pedido: Pedido) {
+async function abrirModalPedido(pedido: IOrder) {
   const modal = document.getElementById("pedido-modal")!;
   const pill = document.getElementById("pedido-status-pill")!;
   const title = document.getElementById("pedido-title")!;
@@ -581,59 +604,63 @@ async function abrirModalPedido(pedido: Pedido) {
   pill.className = `status-pill ${pedido.estado.toLowerCase()}`;
 
   // --------------------------------
-  // OBTENER CLIENTE REAL
+  // OBTENER CLIENTE REAL POR usuarioId
   // --------------------------------
   try {
-    const user = await api.get(`/usuarios/${(pedido as any).usuario_id}`);
-    cliente.textContent = `${user.nombre} ${user.apellido}`;
-    telefono.textContent = user.celular || "-";
-    direccion.textContent = user.direccion || "-";
-  } catch {
-    cliente.textContent = "Sin nombre";
+    const user = (await api.get(`/usuarios/${pedido.usuarioId}`)) as IUser;
+
+    const nombreCompleto = [user.nombre, user.apellido].filter(Boolean).join(" ");
+    cliente.textContent = nombreCompleto || `Usuario #${pedido.usuarioId}`;
+
+    // celular puede venir como string o número
+    const cel = (user.celular as any) ?? "";
+    telefono.textContent = String(cel || "-");
+
+    // Por ahora no tenemos dirección en IUser, lo dejamos como "-"
+    direccion.textContent = "-";
+  } catch (error) {
+    console.error("Error cargando usuario de pedido", error);
+    cliente.textContent = `Usuario #${pedido.usuarioId}`;
     telefono.textContent = "-";
     direccion.textContent = "-";
   }
 
-  // Fecha formateada
+  // Fecha (la mostramos tal cual viene, ya que es string ISO)
   fecha.textContent = pedido.fecha || "-";
 
-  // Método de pago
-  pago.textContent = pedido.metodoPago || "-";
+  // Método de pago ya no viene en IOrder, se deja como "-"
+  pago.textContent = "-";
 
   // -------------------------------
-  // DETALLES DEL PEDIDO
-  // -------------------------------
-  tbody.innerHTML = `<tr><td colspan="4">Cargando...</td></tr>`;
+  // DETALLES DEL PEDIDO (items)
+// -------------------------------
+  const items: IOrderItem[] = pedido.items ?? [];
+  tbody.innerHTML = "";
 
-  try {
-    const detalles = await api.get(`/pedidos/${pedido.id}/detalles`);
-    tbody.innerHTML = "";
-
+  if (!items.length) {
+    tbody.innerHTML = `<tr><td colspan="4">Este pedido no tiene ítems.</td></tr>`;
+  } else {
     let subtotalCalc = 0;
 
-    for (const d of detalles) {
-      const producto = await api.get(`/productos/${d.producto_id}`);
-
-      const line = d.cantidad * producto.precio;
-      subtotalCalc += line;
+    for (const d of items) {
+      subtotalCalc += d.subtotal;
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${producto.nombre}</td>
+        <td>${d.nombre}</td>
         <td>${d.cantidad}</td>
-        <td>${fmtCurrency(producto.precio)}</td>
-        <td>${fmtCurrency(line)}</td>
+        <td>${fmtCurrency(d.precioUnitario)}</td>
+        <td>${fmtCurrency(d.subtotal)}</td>
       `;
       tbody.appendChild(tr);
     }
 
     sub.textContent = fmtCurrency(subtotalCalc);
-    env.textContent = fmtCurrency(pedido.envio || 0);
-    tot.textContent = fmtCurrency(subtotalCalc + (pedido.envio || 0));
 
-  } catch (e) {
-    console.error(e);
-    tbody.innerHTML = `<tr><td colspan="4">Error al cargar productos</td></tr>`;
+    // Ya no manejamos campo 'envio' en IOrder, asumimos 0
+    const envio = 0;
+    env.textContent = fmtCurrency(envio);
+    tot.textContent = fmtCurrency(subtotalCalc + envio);
   }
 
   // -------------------------------
@@ -642,7 +669,7 @@ async function abrirModalPedido(pedido: Pedido) {
   select.value = pedido.estado;
 
   btnGuardar.onclick = async () => {
-    const nuevo = select.value as Estado;
+    const nuevo = select.value as OrderStatus;
     await updatePedidoEstado(pedido.id, nuevo);
     modal.classList.add("hidden");
   };
@@ -668,3 +695,4 @@ function inicializarPedidosKanban() {
   inicializarDragAndDropPedidos();
   recargarKanban();
 }
+
