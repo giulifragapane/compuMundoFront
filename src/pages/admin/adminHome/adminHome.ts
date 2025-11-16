@@ -607,11 +607,13 @@ async function abrirModalPedido(pedido: IOrder) {
   // OBTENER CLIENTE REAL POR usuarioId
   // --------------------------------
   try {
+    const userPrueba = await api.get(`/usuarios/${pedido.usuarioId}`);
+    console.log("Usuario del pedido cargado (prueba):", userPrueba);
     const user = (await api.get(`/usuarios/${pedido.usuarioId}`)) as IUser;
 
     const nombreCompleto = [user.nombre, user.apellido].filter(Boolean).join(" ");
     cliente.textContent = nombreCompleto || `Usuario #${pedido.usuarioId}`;
-
+    console.log("Usuario del pedido cargado:", user);
     // celular puede venir como string o número
     const cel = (user.celular as any) ?? "";
     telefono.textContent = String(cel || "-");
@@ -636,6 +638,9 @@ async function abrirModalPedido(pedido: IOrder) {
 // -------------------------------
   const items: IOrderItem[] = pedido.items ?? [];
   tbody.innerHTML = "";
+  console.log("Pedidos:", pedido);
+  console.log("Items del pedido:", items);
+
 
   if (!items.length) {
     tbody.innerHTML = `<tr><td colspan="4">Este pedido no tiene ítems.</td></tr>`;
@@ -645,9 +650,11 @@ async function abrirModalPedido(pedido: IOrder) {
     for (const d of items) {
       subtotalCalc += d.subtotal;
 
+      const productos = await api.get(`/productos/${d.productoId}`) as IProduct;
+      console.log("Producto del ítem cargado:", productos);
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${d.nombre}</td>
+        <td>${productos.nombre || "producto nombre"}</td>
         <td>${d.cantidad}</td>
         <td>${fmtCurrency(d.precioUnitario)}</td>
         <td>${fmtCurrency(d.subtotal)}</td>

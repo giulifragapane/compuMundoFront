@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             <span><strong>Pedido #ORD-${pedido.id}</strong></span>
             <span class="estado ${pedido.estado.toLowerCase()}">${pedido.estado}</span>
           </div>
-          <small>📅 ${new Date(pedido.fecha).toLocaleString()}</small>
+          <small>📅 ${new Date(pedido.fecha).toLocaleDateString()}</small>
           <p class="precio">Total: $${pedido.total.toFixed(2)}</p>
         </div>
       `
