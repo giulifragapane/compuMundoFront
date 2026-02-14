@@ -187,7 +187,7 @@ function inicializarCarrito() {
       // 🔹 Creamos el objeto pedido completo (IOrder)
       const pedido: Omit<IOrder, "id"> = {
         usuarioId: Number(usuarioId),
-        fecha: new Date().toISOString(), // ← Genera la fecha actual en formato ISO
+        fecha: new Date().toLocaleDateString("es-AR"),
         total,
         estado: "PENDIENTE",
         items, // 🔥 los detalles van dentro del pedido
